@@ -732,9 +732,42 @@ export function cn(...inputs: ClassValue[]) {
 | Method | URL | Description |
 | GET | `/api/fleet-health` | Fleet health report |
 
-### Example Request/Response
+### Example Request/Response (Drones)
 
-> Curl examples will be added here as endpoints are implemented.
+```bash
+# Create a drone
+curl -X POST http://localhost:3000/api/drones \
+  -H "Content-Type: application/json" \
+  -d '{"serialNumber": "SKY-AB12-CD34", "model": "PHANTOM_4"}'
+# → 201 { id, serialNumber, model, status: "AVAILABLE", ... }
+
+# List drones (paginated + filtered)
+curl "http://localhost:3000/api/drones?page=1&limit=10&status=AVAILABLE"
+# → 200 { data: [...], meta: { page, limit, total, totalPages } }
+
+# Get single drone
+curl http://localhost:3000/api/drones/{id}
+# → 200 { id, serialNumber, model, status, totalFlightHours, ... }
+
+# Update drone
+curl -X PATCH http://localhost:3000/api/drones/{id} \
+  -H "Content-Type: application/json" \
+  -d '{"model": "MATRICE_300"}'
+# → 200 { ... updated drone }
+
+# Retire drone
+curl -X PATCH http://localhost:3000/api/drones/{id}/retire
+# → 200 { ... status: "RETIRED" }
+
+# Delete drone
+curl -X DELETE http://localhost:3000/api/drones/{id}
+# → 204 (no content)
+
+# Error examples
+# Invalid serial → 400 { message: [...], error: "Bad Request" }
+# Duplicate serial → 409 { message, error: "Business Rule Violation", details }
+# Not found → 404 { message, error: "Business Rule Violation" }
+```
 
 ---
 

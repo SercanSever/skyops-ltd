@@ -1,0 +1,100 @@
+### Create Drone
+POST http://localhost:3000/api/drones
+Content-Type: application/json
+
+{
+  "serialNumber": "SKY-AB12-CD34",
+  "model": "PHANTOM_4"
+}
+
+### Create Drone (Matrice 300)
+POST http://localhost:3000/api/drones
+Content-Type: application/json
+
+{
+  "serialNumber": "SKY-XY99-ZW01",
+  "model": "MATRICE_300"
+}
+
+### Create Drone (Mavic 3 Enterprise)
+POST http://localhost:3000/api/drones
+Content-Type: application/json
+
+{
+  "serialNumber": "SKY-MV3E-0001",
+  "model": "MAVIC_3_ENTERPRISE"
+}
+
+### List Drones (paginated)
+GET http://localhost:3000/api/drones?page=1&limit=10
+
+### List Drones (filter by status)
+GET http://localhost:3000/api/drones?status=AVAILABLE
+
+### List Drones (filter by model)
+GET http://localhost:3000/api/drones?model=PHANTOM_4
+
+### Get Drone by ID
+GET http://localhost:3000/api/drones/{{droneId}}
+
+### Update Drone
+PATCH http://localhost:3000/api/drones/{{droneId}}
+Content-Type: application/json
+
+{
+  "model": "MATRICE_300"
+}
+
+### Retire Drone
+PATCH http://localhost:3000/api/drones/{{droneId}}/retire
+
+### Delete Drone
+DELETE http://localhost:3000/api/drones/{{droneId}}
+
+### --- Validation Error Cases ---
+
+### Invalid Serial Number (should fail 400)
+POST http://localhost:3000/api/drones
+Content-Type: application/json
+
+{
+  "serialNumber": "INVALID",
+  "model": "PHANTOM_4"
+}
+
+### Invalid Model (should fail 400)
+POST http://localhost:3000/api/drones
+Content-Type: application/json
+
+{
+  "serialNumber": "SKY-TE5T-0001",
+  "model": "UNKNOWN_MODEL"
+}
+
+### Missing Fields (should fail 400)
+POST http://localhost:3000/api/drones
+Content-Type: application/json
+
+{}
+
+### Unknown Fields (should fail 400)
+POST http://localhost:3000/api/drones
+Content-Type: application/json
+
+{
+  "serialNumber": "SKY-TE5T-0002",
+  "model": "PHANTOM_4",
+  "unknownField": "value"
+}
+
+### Duplicate Serial Number (should fail 409 — run Create Drone first)
+POST http://localhost:3000/api/drones
+Content-Type: application/json
+
+{
+  "serialNumber": "SKY-AB12-CD34",
+  "model": "MATRICE_300"
+}
+
+### Get Non-existent Drone (should fail 404)
+GET http://localhost:3000/api/drones/00000000-0000-0000-0000-000000000000
