@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import databaseConfig from './config/database.config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { DroneModule } from './modules/drone/infrastructure/drone.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { AppService } from './app.service';
       useFactory: (configService: ConfigService) =>
         configService.getOrThrow('database'),
     }),
+    DroneModule,
   ],
   controllers: [AppController],
   providers: [AppService],
