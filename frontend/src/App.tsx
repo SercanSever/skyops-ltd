@@ -1,5 +1,5 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -8,7 +8,7 @@ const queryClient = new QueryClient({
       retry: 1,
     },
   },
-})
+});
 
 function DashboardPage() {
   return (
@@ -16,7 +16,7 @@ function DashboardPage() {
       <h1 className="text-3xl font-bold">SkyOps Mission Control</h1>
       <p className="mt-2 text-muted-foreground">Dashboard — Coming soon</p>
     </div>
-  )
+  );
 }
 
 function App() {
@@ -29,7 +29,7 @@ function App() {
         </Routes>
       </BrowserRouter>
     </QueryClientProvider>
-  )
+  );
 }
 
-export default App
+export default App;
