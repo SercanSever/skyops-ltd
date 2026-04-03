@@ -9,9 +9,11 @@ import { ListDronesUseCase } from '../application/use-cases/list-drones.use-case
 import { UpdateDroneUseCase } from '../application/use-cases/update-drone.use-case';
 import { RetireDroneUseCase } from '../application/use-cases/retire-drone.use-case';
 import { DeleteDroneUseCase } from '../application/use-cases/delete-drone.use-case';
+import { DroneController } from '../presentation/drone.controller';
 
 @Module({
   imports: [TypeOrmModule.forFeature([DroneOrmEntity])],
+  controllers: [DroneController],
   providers: [
     { provide: DRONE_REPOSITORY, useClass: DroneRepository },
     CreateDroneUseCase,
