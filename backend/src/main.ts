@@ -16,7 +16,7 @@ async function bootstrap() {
   );
 
   app.enableCors({
-    origin: 'http://localhost:5173',
+    origin: process.env.CORS_ORIGIN?.split(',') ?? '*',
   });
 
   await app.listen(process.env.PORT ?? 3000);
