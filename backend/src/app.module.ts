@@ -5,6 +5,7 @@ import databaseConfig from './config/database.config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { DroneModule } from './modules/drone/infrastructure/drone.module';
+import { MissionModule } from './modules/mission/infrastructure/mission.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { DroneModule } from './modules/drone/infrastructure/drone.module';
         configService.getOrThrow('database'),
     }),
     DroneModule,
+    MissionModule,
   ],
   controllers: [AppController],
   providers: [AppService],
