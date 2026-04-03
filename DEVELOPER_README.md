@@ -508,20 +508,68 @@ An object without identity, defined by its value. Two SerialNumber instances wit
 
 ```typescript
 export class SerialNumber {
-  private constructor(private readonly value: string) {}
+  private static readonly FORMAT = /^SKY-[A-Z0-9]{4}-[A-Z0-9]{4}$/;
+  private readonly value: string;
+
+  private constructor(value: string) { this.value = value; }
 
   static create(value: string): SerialNumber {
-    if (!/^SKY-[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(value)) {
+    if (!SerialNumber.FORMAT.test(value)) {
       throw new Error('Invalid serial number format. Expected: SKY-XXXX-XXXX');
     }
     return new SerialNumber(value);
   }
 
-  getValue(): string {
-    return this.value;
-  }
+  getValue(): string { return this.value; }
+  equals(other: SerialNumber): boolean { return this.value === other.value; }
 }
 ```
+
+### Domain Entity Construction Pattern
+
+Domain entities use **private constructor + static factories**:
+
+- `static create(props)` — new entity: generates UUID, sets defaults, validates
+- `static reconstitute(props)` — loading from DB: accepts all fields, skips validation
+
+```typescript
+export class Drone {
+  private readonly props: DroneProps;
+  private constructor(props: DroneProps) { this.props = props; }
+
+  static create(props: CreateDroneProps): Drone {
+    // Validates, generates UUID, sets defaults
+  }
+
+  static reconstitute(props: DroneProps): Drone {
+    // Direct construction, no validation (data already valid from DB)
+    return new Drone(props);
+  }
+
+  // Properties exposed via getters only
+  get id(): string { return this.props.id; }
+
+  // Business methods mutate internal state
+  addFlightHours(hours: number): void { /* validation + mutation */ }
+}
+```
+
+### Mission State Machine
+
+The Mission entity encapsulates its state machine. The entity validates transitions, the use case orchestrates side effects:
+
+```text
+PLANNED ──→ PRE_FLIGHT_CHECK ──→ IN_PROGRESS ──→ COMPLETED
+   |              |                    |
+   v              v                    v
+ABORTED        ABORTED             ABORTED
+```
+
+Key transition rules:
+- PRE_FLIGHT_CHECK → IN_PROGRESS: sets `actualStartTime`
+- IN_PROGRESS → COMPLETED: requires `flightHours > 0`, sets `actualEndTime`
+- Any → ABORTED: `abortReason` is optional, sets `actualEndTime`
+- COMPLETED and ABORTED are terminal states
 
 ### Mapper
 
