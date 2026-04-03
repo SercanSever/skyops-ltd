@@ -312,11 +312,38 @@ export class DroneOrmEntity {
 }
 ```
 
+### Data Source Configuration
+
+TypeORM needs two configuration points:
+
+1. **`src/database/data-source.ts`** — Used by the TypeORM CLI (migrations). Loads `.env` from the monorepo root using `dotenv`.
+2. **`src/config/database.config.ts`** — Used by NestJS at runtime. Registered as a namespaced config (`'database'`) via `@nestjs/config`.
+
+Both share the same connection parameters but are loaded differently. The data source uses `dotenv` directly (for CLI), while the NestJS config uses `ConfigModule.forRoot()`.
+
+**Why two files?** The TypeORM CLI runs outside of NestJS (it's a standalone Node.js script), so it can't use NestJS's `ConfigModule`. The data source file bridges this gap.
+
+### ts-node and Module Resolution
+
+The project uses `"module": "nodenext"` in `tsconfig.json` for NestJS compatibility. However, the TypeORM CLI runs via `ts-node` which needs CommonJS. A `ts-node` override in `tsconfig.json` handles this:
+
+```json
+{
+  "ts-node": {
+    "compilerOptions": {
+      "module": "commonjs"
+    }
+  }
+}
+```
+
+This means migration scripts use `ts-node -r tsconfig-paths/register` to ensure correct module resolution.
+
 ### Migration Commands
 
 ```bash
 # Generate a migration from entity changes
-npm run migration:generate -- -n CreateDronesTable
+npm run migration:generate -- src/database/migrations/MigrationName
 # This creates a timestamped file under src/database/migrations/
 
 # Run migrations (creates tables)
@@ -331,28 +358,75 @@ npm run migration:show
 
 **IMPORTANT**: DO NOT USE `synchronize: true`. Always write migrations. Otherwise, data loss may occur in production.
 
-### Migration File Example
+### Database Schema
 
-```typescript
-export class CreateDronesTable1234567890 implements MigrationInterface {
-  public async up(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`
-      CREATE TYPE drone_status AS ENUM ('AVAILABLE', 'IN_MISSION', 'MAINTENANCE', 'RETIRED');
-      CREATE TABLE drones (
-        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-        serial_number VARCHAR UNIQUE NOT NULL,
-        status drone_status DEFAULT 'AVAILABLE',
-        created_at TIMESTAMP DEFAULT NOW(),
-        updated_at TIMESTAMP DEFAULT NOW()
-      );
-    `);
-  }
+#### Enum Types (PostgreSQL native)
 
-  public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`DROP TABLE drones; DROP TYPE drone_status;`);
-  }
-}
-```
+| Enum Name | Values |
+|---|---|
+| `drone_status` | AVAILABLE, IN_MISSION, MAINTENANCE, RETIRED |
+| `drone_model` | PHANTOM_4, MATRICE_300, MAVIC_3_ENTERPRISE |
+| `mission_status` | PLANNED, PRE_FLIGHT_CHECK, IN_PROGRESS, COMPLETED, ABORTED |
+| `mission_type` | WIND_TURBINE_INSPECTION, SOLAR_PANEL_SURVEY, POWER_LINE_PATROL |
+| `maintenance_type` | ROUTINE_CHECK, BATTERY_REPLACEMENT, MOTOR_REPAIR, FIRMWARE_UPDATE, FULL_OVERHAUL |
+
+#### Tables
+
+**`drones`**
+| Column | Type | Constraints |
+|---|---|---|
+| id | UUID | PK, auto-generated |
+| serial_number | VARCHAR | NOT NULL, UNIQUE INDEX |
+| model | drone_model (enum) | NOT NULL |
+| status | drone_status (enum) | NOT NULL, DEFAULT 'AVAILABLE', INDEX |
+| total_flight_hours | DECIMAL(10,2) | NOT NULL, DEFAULT 0 |
+| last_maintenance_date | TIMESTAMPTZ | nullable |
+| next_maintenance_due_date | TIMESTAMPTZ | nullable |
+| created_at | TIMESTAMPTZ | NOT NULL, DEFAULT now() |
+| updated_at | TIMESTAMPTZ | NOT NULL, DEFAULT now() |
+
+**`missions`**
+| Column | Type | Constraints |
+|---|---|---|
+| id | UUID | PK, auto-generated |
+| name | VARCHAR | NOT NULL |
+| type | mission_type (enum) | NOT NULL |
+| drone_id | UUID | NOT NULL, FK → drones(id) ON DELETE RESTRICT, INDEX |
+| pilot_name | VARCHAR | NOT NULL |
+| site_location | VARCHAR | NOT NULL |
+| status | mission_status (enum) | NOT NULL, DEFAULT 'PLANNED', INDEX |
+| planned_start_time | TIMESTAMPTZ | NOT NULL, composite INDEX with planned_end_time |
+| planned_end_time | TIMESTAMPTZ | NOT NULL |
+| actual_start_time | TIMESTAMPTZ | nullable |
+| actual_end_time | TIMESTAMPTZ | nullable |
+| flight_hours | DECIMAL(10,2) | nullable |
+| abort_reason | TEXT | nullable |
+| created_at | TIMESTAMPTZ | NOT NULL, DEFAULT now() |
+| updated_at | TIMESTAMPTZ | NOT NULL, DEFAULT now() |
+
+**`maintenance_logs`**
+| Column | Type | Constraints |
+|---|---|---|
+| id | UUID | PK, auto-generated |
+| drone_id | UUID | NOT NULL, FK → drones(id) ON DELETE RESTRICT, INDEX |
+| type | maintenance_type (enum) | NOT NULL |
+| technician_name | VARCHAR | NOT NULL |
+| notes | TEXT | nullable |
+| date_performed | TIMESTAMPTZ | NOT NULL |
+| flight_hours_at_maintenance | DECIMAL(10,2) | NOT NULL |
+| created_at | TIMESTAMPTZ | NOT NULL, DEFAULT now() |
+| updated_at | TIMESTAMPTZ | NOT NULL, DEFAULT now() |
+
+#### Key Indexes
+
+- `serial_number` on drones — UNIQUE (prevents duplicate drone registration)
+- `status` on drones and missions — for filtering queries
+- `drone_id` on missions and maintenance_logs — FK index for join performance
+- `(planned_start_time, planned_end_time)` on missions — composite index for overlap detection queries
+
+#### Foreign Key Rules
+
+All foreign keys use `ON DELETE RESTRICT` — a drone cannot be deleted if it has related missions or maintenance logs. This prevents accidental data loss.
 
 ### QueryBuilder Usage
 
@@ -434,20 +508,68 @@ An object without identity, defined by its value. Two SerialNumber instances wit
 
 ```typescript
 export class SerialNumber {
-  private constructor(private readonly value: string) {}
+  private static readonly FORMAT = /^SKY-[A-Z0-9]{4}-[A-Z0-9]{4}$/;
+  private readonly value: string;
+
+  private constructor(value: string) { this.value = value; }
 
   static create(value: string): SerialNumber {
-    if (!/^SKY-[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(value)) {
+    if (!SerialNumber.FORMAT.test(value)) {
       throw new Error('Invalid serial number format. Expected: SKY-XXXX-XXXX');
     }
     return new SerialNumber(value);
   }
 
-  getValue(): string {
-    return this.value;
-  }
+  getValue(): string { return this.value; }
+  equals(other: SerialNumber): boolean { return this.value === other.value; }
 }
 ```
+
+### Domain Entity Construction Pattern
+
+Domain entities use **private constructor + static factories**:
+
+- `static create(props)` — new entity: generates UUID, sets defaults, validates
+- `static reconstitute(props)` — loading from DB: accepts all fields, skips validation
+
+```typescript
+export class Drone {
+  private readonly props: DroneProps;
+  private constructor(props: DroneProps) { this.props = props; }
+
+  static create(props: CreateDroneProps): Drone {
+    // Validates, generates UUID, sets defaults
+  }
+
+  static reconstitute(props: DroneProps): Drone {
+    // Direct construction, no validation (data already valid from DB)
+    return new Drone(props);
+  }
+
+  // Properties exposed via getters only
+  get id(): string { return this.props.id; }
+
+  // Business methods mutate internal state
+  addFlightHours(hours: number): void { /* validation + mutation */ }
+}
+```
+
+### Mission State Machine
+
+The Mission entity encapsulates its state machine. The entity validates transitions, the use case orchestrates side effects:
+
+```text
+PLANNED ──→ PRE_FLIGHT_CHECK ──→ IN_PROGRESS ──→ COMPLETED
+   |              |                    |
+   v              v                    v
+ABORTED        ABORTED             ABORTED
+```
+
+Key transition rules:
+- PRE_FLIGHT_CHECK → IN_PROGRESS: sets `actualStartTime`
+- IN_PROGRESS → COMPLETED: requires `flightHours > 0`, sets `actualEndTime`
+- Any → ABORTED: `abortReason` is optional, sets `actualEndTime`
+- COMPLETED and ABORTED are terminal states
 
 ### Mapper
 
@@ -610,9 +732,42 @@ export function cn(...inputs: ClassValue[]) {
 | Method | URL | Description |
 | GET | `/api/fleet-health` | Fleet health report |
 
-### Example Request/Response
+### Example Request/Response (Drones)
 
-> Curl examples will be added here as endpoints are implemented.
+```bash
+# Create a drone
+curl -X POST http://localhost:3000/api/drones \
+  -H "Content-Type: application/json" \
+  -d '{"serialNumber": "SKY-AB12-CD34", "model": "PHANTOM_4"}'
+# → 201 { id, serialNumber, model, status: "AVAILABLE", ... }
+
+# List drones (paginated + filtered)
+curl "http://localhost:3000/api/drones?page=1&limit=10&status=AVAILABLE"
+# → 200 { data: [...], meta: { page, limit, total, totalPages } }
+
+# Get single drone
+curl http://localhost:3000/api/drones/{id}
+# → 200 { id, serialNumber, model, status, totalFlightHours, ... }
+
+# Update drone
+curl -X PATCH http://localhost:3000/api/drones/{id} \
+  -H "Content-Type: application/json" \
+  -d '{"model": "MATRICE_300"}'
+# → 200 { ... updated drone }
+
+# Retire drone
+curl -X PATCH http://localhost:3000/api/drones/{id}/retire
+# → 200 { ... status: "RETIRED" }
+
+# Delete drone
+curl -X DELETE http://localhost:3000/api/drones/{id}
+# → 204 (no content)
+
+# Error examples
+# Invalid serial → 400 { message: [...], error: "Bad Request" }
+# Duplicate serial → 409 { message, error: "Business Rule Violation", details }
+# Not found → 404 { message, error: "Business Rule Violation" }
+```
 
 ---
 
@@ -704,7 +859,7 @@ src/modules/new-module/presentation/
 ### Step 5: Migration
 
 ```bash
-npm run migration:generate -- -n CreateNewTable
+npm run migration:generate -- src/database/migrations/CreateNewTable
 npm run migration:run
 ```
 
@@ -994,6 +1149,26 @@ Error: listen EADDRINUSE :::3000
 lsof -i :3000                       # Find the PID
 kill -9 <PID>                        # Kill the process
 ```
+
+### Migration Generate: __dirname Error
+
+```text
+Error: __dirname is not defined in ES module scope
+```
+
+**Solution**: The project uses `module: "nodenext"` which causes ESM issues with TypeORM CLI. Make sure `tsconfig.json` has the `ts-node` override:
+
+```json
+{
+  "ts-node": {
+    "compilerOptions": {
+      "module": "commonjs"
+    }
+  }
+}
+```
+
+And that migration scripts in `package.json` use `ts-node -r tsconfig-paths/register` prefix.
 
 ### TypeORM Sync Warning
 

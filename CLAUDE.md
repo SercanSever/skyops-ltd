@@ -49,7 +49,7 @@ npm run test:e2e         # Run integration tests
 npm run test:cov         # Coverage report
 npm run lint             # ESLint check
 npm run format           # Format with Prettier
-npm run migration:generate -- -n MigrationName  # Generate new migration
+npm run migration:generate -- src/database/migrations/MigrationName  # Generate new migration
 npm run migration:run    # Run migrations
 npm run migration:revert # Revert last migration
 npm run seed             # Load seed data

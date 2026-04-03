@@ -1,4 +1,9 @@
 {
+  "ts-node": {
+    "compilerOptions": {
+      "module": "commonjs"
+    }
+  },
   "compilerOptions": {
     "module": "nodenext",
     "moduleResolution": "nodenext",
@@ -16,6 +21,7 @@
     "baseUrl": "./",
     "incremental": true,
     "skipLibCheck": true,
+    "types": ["jest", "node"],
     "strictNullChecks": true,
     "forceConsistentCasingInFileNames": true,
     "noImplicitAny": true,
