@@ -32,7 +32,7 @@ npm run test:cov         # Coverage report
 npm run lint             # ESLint (auto-fix)
 npm run format           # Prettier format
 npm run format:check     # Prettier check (CI)
-npm run migration:generate -- -n Name  # Generate migration from entity changes
+npm run migration:generate -- src/database/migrations/Name  # Generate migration
 npm run migration:run    # Run pending migrations
 npm run migration:revert # Revert last migration
 npm run seed             # Load seed data

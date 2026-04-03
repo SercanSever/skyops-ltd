@@ -11,18 +11,23 @@ PostgreSQL and TypeORM usage rules.
 ## Migration Commands
 
 ```bash
-# Generate migration from entity changes
-npm run migration:generate -- -n CreateDronesTable
+# Generate migration from entity changes (path is positional, NOT -n flag)
+npm run migration:generate -- src/database/migrations/CreateDronesTable
 
 # Create empty migration (for manual SQL)
-npm run migration:create -- -n SeedInitialData
+npm run migration:create -- src/database/migrations/SeedInitialData
 
 # Run migrations
 npm run migration:run
 
 # Revert last migration
 npm run migration:revert
+
+# View migration status
+npm run migration:show
 ```
+
+**Note:** Migration scripts use `ts-node -r tsconfig-paths/register` internally because the project uses `module: "nodenext"`. A `ts-node` override in `tsconfig.json` forces CommonJS for CLI compatibility.
 
 ## Entity Conventions (ORM Entity — Infrastructure Layer)
 

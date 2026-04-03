@@ -778,7 +778,7 @@ src/modules/new-module/presentation/
 ### Step 5: Migration
 
 ```bash
-npm run migration:generate -- -n CreateNewTable
+npm run migration:generate -- src/database/migrations/CreateNewTable
 npm run migration:run
 ```
 
