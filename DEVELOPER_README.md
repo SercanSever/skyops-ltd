@@ -769,6 +769,49 @@ curl -X DELETE http://localhost:3000/api/drones/{id}
 # Not found → 404 { message, error: "Business Rule Violation" }
 ```
 
+### Example Request/Response (Missions)
+
+```bash
+# Create mission
+curl -X POST http://localhost:3000/api/missions \
+  -H "Content-Type: application/json" \
+  -d '{"name": "Inspection", "type": "WIND_TURBINE_INSPECTION", "droneId": "{id}", "pilotName": "John", "siteLocation": "Site A", "plannedStartTime": "2027-01-15T10:00:00Z", "plannedEndTime": "2027-01-15T14:00:00Z"}'
+# → 201
+
+# State transitions
+curl -X PATCH http://localhost:3000/api/missions/{id}/transition \
+  -H "Content-Type: application/json" \
+  -d '{"status": "PRE_FLIGHT_CHECK"}'
+
+curl -X PATCH http://localhost:3000/api/missions/{id}/transition \
+  -H "Content-Type: application/json" \
+  -d '{"status": "IN_PROGRESS"}'
+# Side effect: drone → IN_MISSION
+
+curl -X PATCH http://localhost:3000/api/missions/{id}/transition \
+  -H "Content-Type: application/json" \
+  -d '{"status": "COMPLETED", "flightHours": 2.5}'
+# Side effects: drone → AVAILABLE, totalFlightHours += 2.5, nextMaintenanceDueDate recalculated
+```
+
+### Example Request/Response (Maintenance)
+
+```bash
+# Create maintenance log (drone → MAINTENANCE)
+curl -X POST http://localhost:3000/api/maintenance-logs \
+  -H "Content-Type: application/json" \
+  -d '{"droneId": "{id}", "type": "ROUTINE_CHECK", "technicianName": "Alex Smith", "notes": "90-day inspection", "datePerformed": "2026-04-01T10:00:00Z", "flightHoursAtMaintenance": 25}'
+# → 201, drone status → MAINTENANCE, lastMaintenanceDate + nextMaintenanceDueDate updated
+
+# Complete maintenance (drone → AVAILABLE)
+curl -X PATCH http://localhost:3000/api/maintenance-logs/{id}/complete
+# → 200, drone status → AVAILABLE
+
+# Error: flight hours mismatch (±1 hour tolerance)
+# → 422 "Flight hours at maintenance is inconsistent..."
+# Error: drone IN_MISSION → 422 "Cannot start maintenance on a drone currently on a mission"
+```
+
 ---
 
 ## 10. Design Decisions
