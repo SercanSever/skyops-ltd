@@ -1,10 +1,16 @@
+import { Inject, Injectable } from '@nestjs/common';
 import { BusinessRuleViolationException } from '../../../../common/exceptions/business-rule-violation.exception';
 import { Drone } from '../../domain/entities/drone.entity';
-import { IDroneRepository } from '../../domain/repositories/drone.repository.interface';
+import type { IDroneRepository } from '../../domain/repositories/drone.repository.interface';
+import { DRONE_REPOSITORY } from '../../domain/repositories/drone.repository.interface';
 import { CreateDroneInput } from '../dto/create-drone.input';
 
+@Injectable()
 export class CreateDroneUseCase {
-  constructor(private readonly droneRepository: IDroneRepository) {}
+  constructor(
+    @Inject(DRONE_REPOSITORY)
+    private readonly droneRepository: IDroneRepository,
+  ) {}
 
   async execute(input: CreateDroneInput): Promise<Drone> {
     const existing = await this.droneRepository.findBySerialNumber(
