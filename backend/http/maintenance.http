@@ -1,0 +1,84 @@
+### --- Prerequisites: Create a drone with some flight hours ---
+
+### Create Drone for maintenance tests
+POST http://localhost:3000/api/drones
+Content-Type: application/json
+
+{
+  "serialNumber": "SKY-MT01-TE5T",
+  "model": "MATRICE_300"
+}
+
+### --- Maintenance CRUD ---
+
+### Create Maintenance Log
+POST http://localhost:3000/api/maintenance-logs
+Content-Type: application/json
+
+{
+  "droneId": "{{droneId}}",
+  "type": "ROUTINE_CHECK",
+  "technicianName": "Alex Smith",
+  "notes": "Regular 90-day inspection completed",
+  "datePerformed": "2026-04-01T10:00:00Z",
+  "flightHoursAtMaintenance": 0
+}
+
+### List Maintenance Logs (paginated)
+GET http://localhost:3000/api/maintenance-logs?page=1&limit=10
+
+### List Maintenance Logs (filtered by droneId)
+GET http://localhost:3000/api/maintenance-logs?droneId={{droneId}}
+
+### List Maintenance Logs (filtered by type)
+GET http://localhost:3000/api/maintenance-logs?type=ROUTINE_CHECK
+
+### Get Maintenance Log by ID
+GET http://localhost:3000/api/maintenance-logs/{{maintenanceId}}
+
+### Complete Maintenance (drone → AVAILABLE)
+PATCH http://localhost:3000/api/maintenance-logs/{{maintenanceId}}/complete
+
+### --- Validation Error Cases ---
+
+### Invalid: Drone IN_MISSION (should fail 422)
+POST http://localhost:3000/api/maintenance-logs
+Content-Type: application/json
+
+{
+  "droneId": "{{droneId}}",
+  "type": "BATTERY_REPLACEMENT",
+  "technicianName": "Tech",
+  "datePerformed": "2026-04-01T10:00:00Z",
+  "flightHoursAtMaintenance": 25
+}
+
+### Invalid: Flight hours mismatch (should fail 422)
+POST http://localhost:3000/api/maintenance-logs
+Content-Type: application/json
+
+{
+  "droneId": "{{droneId}}",
+  "type": "MOTOR_REPAIR",
+  "technicianName": "Tech",
+  "datePerformed": "2026-04-01T10:00:00Z",
+  "flightHoursAtMaintenance": 999
+}
+
+### Invalid: Missing required fields (should fail 400)
+POST http://localhost:3000/api/maintenance-logs
+Content-Type: application/json
+
+{}
+
+### Invalid: Non-existent drone (should fail 404)
+POST http://localhost:3000/api/maintenance-logs
+Content-Type: application/json
+
+{
+  "droneId": "00000000-0000-0000-0000-000000000000",
+  "type": "ROUTINE_CHECK",
+  "technicianName": "Tech",
+  "datePerformed": "2026-04-01T10:00:00Z",
+  "flightHoursAtMaintenance": 0
+}

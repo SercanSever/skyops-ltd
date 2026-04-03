@@ -6,6 +6,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { DroneModule } from './modules/drone/infrastructure/drone.module';
 import { MissionModule } from './modules/mission/infrastructure/mission.module';
+import { MaintenanceModule } from './modules/maintenance/infrastructure/maintenance.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { MissionModule } from './modules/mission/infrastructure/mission.module';
     }),
     DroneModule,
     MissionModule,
+    MaintenanceModule,
   ],
   controllers: [AppController],
   providers: [AppService],
