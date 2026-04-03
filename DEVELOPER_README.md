@@ -769,6 +769,58 @@ curl -X DELETE http://localhost:3000/api/drones/{id}
 # Not found → 404 { message, error: "Business Rule Violation" }
 ```
 
+### Example Request/Response (Missions)
+
+```bash
+# Create a mission (drone must exist and be AVAILABLE)
+curl -X POST http://localhost:3000/api/missions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Wind Farm Inspection",
+    "type": "WIND_TURBINE_INSPECTION",
+    "droneId": "{droneId}",
+    "pilotName": "John Doe",
+    "siteLocation": "Wind Farm Alpha",
+    "plannedStartTime": "2027-01-15T10:00:00Z",
+    "plannedEndTime": "2027-01-15T14:00:00Z"
+  }'
+# → 201 { id, name, type, droneId, status: "PLANNED", ... }
+
+# List missions (filtered)
+curl "http://localhost:3000/api/missions?status=PLANNED&droneId={droneId}&page=1&limit=10"
+# → 200 { data: [...], meta: { page, limit, total, totalPages } }
+
+# State transitions
+curl -X PATCH http://localhost:3000/api/missions/{id}/transition \
+  -H "Content-Type: application/json" \
+  -d '{"status": "PRE_FLIGHT_CHECK"}'
+# → 200 { status: "PRE_FLIGHT_CHECK" }
+
+curl -X PATCH http://localhost:3000/api/missions/{id}/transition \
+  -H "Content-Type: application/json" \
+  -d '{"status": "IN_PROGRESS"}'
+# → 200 { status: "IN_PROGRESS", actualStartTime: "..." }
+# Side effect: drone status → IN_MISSION
+
+curl -X PATCH http://localhost:3000/api/missions/{id}/transition \
+  -H "Content-Type: application/json" \
+  -d '{"status": "COMPLETED", "flightHours": 2.5}'
+# → 200 { status: "COMPLETED", flightHours: 2.5, actualEndTime: "..." }
+# Side effects: drone totalFlightHours += 2.5, drone → AVAILABLE, nextMaintenanceDueDate recalculated
+
+# Abort (reason optional)
+curl -X PATCH http://localhost:3000/api/missions/{id}/transition \
+  -H "Content-Type: application/json" \
+  -d '{"status": "ABORTED", "abortReason": "Weather conditions"}'
+# → 200 { status: "ABORTED", abortReason: "Weather conditions" }
+
+# Error examples
+# Past scheduling → 422 "Planned start time must be in the future"
+# Overlapping mission → 409 "Mission time overlaps..."
+# Invalid transition → 422 "Invalid state transition: ABORTED → IN_PROGRESS"
+# Drone not available → 422 "Drone is not available for missions"
+```
+
 ---
 
 ## 10. Design Decisions
