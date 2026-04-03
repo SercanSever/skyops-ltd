@@ -312,11 +312,38 @@ export class DroneOrmEntity {
 }
 ```
 
+### Data Source Configuration
+
+TypeORM needs two configuration points:
+
+1. **`src/database/data-source.ts`** — Used by the TypeORM CLI (migrations). Loads `.env` from the monorepo root using `dotenv`.
+2. **`src/config/database.config.ts`** — Used by NestJS at runtime. Registered as a namespaced config (`'database'`) via `@nestjs/config`.
+
+Both share the same connection parameters but are loaded differently. The data source uses `dotenv` directly (for CLI), while the NestJS config uses `ConfigModule.forRoot()`.
+
+**Why two files?** The TypeORM CLI runs outside of NestJS (it's a standalone Node.js script), so it can't use NestJS's `ConfigModule`. The data source file bridges this gap.
+
+### ts-node and Module Resolution
+
+The project uses `"module": "nodenext"` in `tsconfig.json` for NestJS compatibility. However, the TypeORM CLI runs via `ts-node` which needs CommonJS. A `ts-node` override in `tsconfig.json` handles this:
+
+```json
+{
+  "ts-node": {
+    "compilerOptions": {
+      "module": "commonjs"
+    }
+  }
+}
+```
+
+This means migration scripts use `ts-node -r tsconfig-paths/register` to ensure correct module resolution.
+
 ### Migration Commands
 
 ```bash
 # Generate a migration from entity changes
-npm run migration:generate -- -n CreateDronesTable
+npm run migration:generate -- src/database/migrations/MigrationName
 # This creates a timestamped file under src/database/migrations/
 
 # Run migrations (creates tables)
@@ -331,28 +358,75 @@ npm run migration:show
 
 **IMPORTANT**: DO NOT USE `synchronize: true`. Always write migrations. Otherwise, data loss may occur in production.
 
-### Migration File Example
+### Database Schema
 
-```typescript
-export class CreateDronesTable1234567890 implements MigrationInterface {
-  public async up(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`
-      CREATE TYPE drone_status AS ENUM ('AVAILABLE', 'IN_MISSION', 'MAINTENANCE', 'RETIRED');
-      CREATE TABLE drones (
-        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-        serial_number VARCHAR UNIQUE NOT NULL,
-        status drone_status DEFAULT 'AVAILABLE',
-        created_at TIMESTAMP DEFAULT NOW(),
-        updated_at TIMESTAMP DEFAULT NOW()
-      );
-    `);
-  }
+#### Enum Types (PostgreSQL native)
 
-  public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`DROP TABLE drones; DROP TYPE drone_status;`);
-  }
-}
-```
+| Enum Name | Values |
+|---|---|
+| `drone_status` | AVAILABLE, IN_MISSION, MAINTENANCE, RETIRED |
+| `drone_model` | PHANTOM_4, MATRICE_300, MAVIC_3_ENTERPRISE |
+| `mission_status` | PLANNED, PRE_FLIGHT_CHECK, IN_PROGRESS, COMPLETED, ABORTED |
+| `mission_type` | WIND_TURBINE_INSPECTION, SOLAR_PANEL_SURVEY, POWER_LINE_PATROL |
+| `maintenance_type` | ROUTINE_CHECK, BATTERY_REPLACEMENT, MOTOR_REPAIR, FIRMWARE_UPDATE, FULL_OVERHAUL |
+
+#### Tables
+
+**`drones`**
+| Column | Type | Constraints |
+|---|---|---|
+| id | UUID | PK, auto-generated |
+| serial_number | VARCHAR | NOT NULL, UNIQUE INDEX |
+| model | drone_model (enum) | NOT NULL |
+| status | drone_status (enum) | NOT NULL, DEFAULT 'AVAILABLE', INDEX |
+| total_flight_hours | DECIMAL(10,2) | NOT NULL, DEFAULT 0 |
+| last_maintenance_date | TIMESTAMPTZ | nullable |
+| next_maintenance_due_date | TIMESTAMPTZ | nullable |
+| created_at | TIMESTAMPTZ | NOT NULL, DEFAULT now() |
+| updated_at | TIMESTAMPTZ | NOT NULL, DEFAULT now() |
+
+**`missions`**
+| Column | Type | Constraints |
+|---|---|---|
+| id | UUID | PK, auto-generated |
+| name | VARCHAR | NOT NULL |
+| type | mission_type (enum) | NOT NULL |
+| drone_id | UUID | NOT NULL, FK → drones(id) ON DELETE RESTRICT, INDEX |
+| pilot_name | VARCHAR | NOT NULL |
+| site_location | VARCHAR | NOT NULL |
+| status | mission_status (enum) | NOT NULL, DEFAULT 'PLANNED', INDEX |
+| planned_start_time | TIMESTAMPTZ | NOT NULL, composite INDEX with planned_end_time |
+| planned_end_time | TIMESTAMPTZ | NOT NULL |
+| actual_start_time | TIMESTAMPTZ | nullable |
+| actual_end_time | TIMESTAMPTZ | nullable |
+| flight_hours | DECIMAL(10,2) | nullable |
+| abort_reason | TEXT | nullable |
+| created_at | TIMESTAMPTZ | NOT NULL, DEFAULT now() |
+| updated_at | TIMESTAMPTZ | NOT NULL, DEFAULT now() |
+
+**`maintenance_logs`**
+| Column | Type | Constraints |
+|---|---|---|
+| id | UUID | PK, auto-generated |
+| drone_id | UUID | NOT NULL, FK → drones(id) ON DELETE RESTRICT, INDEX |
+| type | maintenance_type (enum) | NOT NULL |
+| technician_name | VARCHAR | NOT NULL |
+| notes | TEXT | nullable |
+| date_performed | TIMESTAMPTZ | NOT NULL |
+| flight_hours_at_maintenance | DECIMAL(10,2) | NOT NULL |
+| created_at | TIMESTAMPTZ | NOT NULL, DEFAULT now() |
+| updated_at | TIMESTAMPTZ | NOT NULL, DEFAULT now() |
+
+#### Key Indexes
+
+- `serial_number` on drones — UNIQUE (prevents duplicate drone registration)
+- `status` on drones and missions — for filtering queries
+- `drone_id` on missions and maintenance_logs — FK index for join performance
+- `(planned_start_time, planned_end_time)` on missions — composite index for overlap detection queries
+
+#### Foreign Key Rules
+
+All foreign keys use `ON DELETE RESTRICT` — a drone cannot be deleted if it has related missions or maintenance logs. This prevents accidental data loss.
 
 ### QueryBuilder Usage
 
@@ -994,6 +1068,26 @@ Error: listen EADDRINUSE :::3000
 lsof -i :3000                       # Find the PID
 kill -9 <PID>                        # Kill the process
 ```
+
+### Migration Generate: __dirname Error
+
+```text
+Error: __dirname is not defined in ES module scope
+```
+
+**Solution**: The project uses `module: "nodenext"` which causes ESM issues with TypeORM CLI. Make sure `tsconfig.json` has the `ts-node` override:
+
+```json
+{
+  "ts-node": {
+    "compilerOptions": {
+      "module": "commonjs"
+    }
+  }
+}
+```
+
+And that migration scripts in `package.json` use `ts-node -r tsconfig-paths/register` prefix.
 
 ### TypeORM Sync Warning
 
