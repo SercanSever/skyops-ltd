@@ -821,6 +821,24 @@ curl -X PATCH http://localhost:3000/api/missions/{id}/transition \
 # Drone not available → 422 "Drone is not available for missions"
 ```
 
+### Example Request/Response (Maintenance)
+
+```bash
+# Create maintenance log (drone → MAINTENANCE)
+curl -X POST http://localhost:3000/api/maintenance-logs \
+  -H "Content-Type: application/json" \
+  -d '{"droneId": "{id}", "type": "ROUTINE_CHECK", "technicianName": "Alex Smith", "notes": "90-day inspection", "datePerformed": "2026-04-01T10:00:00Z", "flightHoursAtMaintenance": 25}'
+# → 201, drone status → MAINTENANCE, lastMaintenanceDate + nextMaintenanceDueDate updated
+
+# Complete maintenance (drone → AVAILABLE)
+curl -X PATCH http://localhost:3000/api/maintenance-logs/{id}/complete
+# → 200, drone status → AVAILABLE
+
+# Error: flight hours mismatch (±1 hour tolerance)
+# → 422 "Flight hours at maintenance is inconsistent..."
+# Error: drone IN_MISSION → 422 "Cannot start maintenance on a drone currently on a mission"
+```
+
 ---
 
 ## 10. Design Decisions
@@ -1107,29 +1125,71 @@ describe('CreateDroneUseCase', () => {
 });
 ```
 
-### Integration Test
+### Integration Test (E2E)
+
+Integration tests use a **real database** and test the full HTTP request/response cycle through all layers. Located in `backend/test/`.
+
+**How it works:**
+
+1. NestJS Test Module imports the full `AppModule` (all modules, real DB)
+2. Supertest sends HTTP requests to the app
+3. Assertions verify response bodies and cross-entity side effects
+4. Test data is cleaned up in `afterAll`
 
 ```typescript
 describe('Mission Lifecycle (e2e)', () => {
-  // Connects to real database
+  let app: INestApplication;
+
+  beforeAll(async () => {
+    // Full app with all modules and real database
+    const moduleFixture = await Test.createTestingModule({
+      imports: [AppModule],
+    }).compile();
+
+    app = moduleFixture.createNestApplication();
+    app.setGlobalPrefix('api');
+    app.useGlobalPipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, transform: true }));
+    app.useGlobalFilters(new AllExceptionsFilter());
+    await app.init();
+  });
+
   it('should complete full mission lifecycle', async () => {
-    // 1. Create drone
-    const drone = await request(app).post('/api/drones').send(droneData);
+    // 1. Create drone → AVAILABLE
+    const droneRes = await request(app.getHttpServer())
+      .post('/api/drones')
+      .send({ serialNumber: 'SKY-E2E1-TE5T', model: 'PHANTOM_4' })
+      .expect(201);
 
-    // 2. Plan mission
-    const mission = await request(app).post('/api/missions').send({ droneId: drone.body.id, ... });
+    // 2. Plan mission → PLANNED
+    // 3. PLANNED → PRE_FLIGHT_CHECK (drone still AVAILABLE)
+    // 4. PRE_FLIGHT_CHECK → IN_PROGRESS (drone → IN_MISSION)
+    // 5. IN_PROGRESS → COMPLETED (flightHours: 2.5, drone → AVAILABLE)
+    // 6. Verify: drone.totalFlightHours = 2.5, nextMaintenanceDueDate set
+  });
 
-    // 3. State transitions
-    await request(app).patch(`/api/missions/${mission.body.id}/transition`).send({ status: 'PRE_FLIGHT_CHECK' });
-    await request(app).patch(`/api/missions/${mission.body.id}/transition`).send({ status: 'IN_PROGRESS' });
-    await request(app).patch(`/api/missions/${mission.body.id}/transition`).send({ status: 'COMPLETED', flightHours: 2.5 });
-
-    // 4. Verify
-    const updatedDrone = await request(app).get(`/api/drones/${drone.body.id}`);
-    expect(updatedDrone.body.totalFlightHours).toBe(2.5);
-    expect(updatedDrone.body.status).toBe('AVAILABLE');
+  afterAll(async () => {
+    // Clean up test-created records
+    await dataSource.query('DELETE FROM missions WHERE id = $1', [missionId]);
+    await dataSource.query('DELETE FROM drones WHERE id = $1', [droneId]);
+    await app.close();
   });
 });
+```
+
+**Key points:**
+- **Global setup must match `main.ts`**: `setGlobalPrefix('api')`, `ValidationPipe`, `AllExceptionsFilter`
+- **Cleanup is essential**: delete test records in `afterAll` to keep the database clean
+- **No mocking**: integration tests use real database, real repositories, real business logic
+- **Cross-entity verification**: after completing a mission, verify the drone's status and flight hours changed
+
+**Running integration tests:**
+
+```bash
+# Prerequisites: PostgreSQL must be running
+docker compose up -d postgres
+
+# Run integration tests
+cd backend && npm run test:e2e
 ```
 
 ### Running Tests

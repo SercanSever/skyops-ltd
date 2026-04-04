@@ -2,10 +2,10 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import databaseConfig from './config/database.config';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { DroneModule } from './modules/drone/infrastructure/drone.module';
 import { MissionModule } from './modules/mission/infrastructure/mission.module';
+import { MaintenanceModule } from './modules/maintenance/infrastructure/maintenance.module';
+import { FleetHealthModule } from './modules/fleet-health/fleet-health.module';
 
 @Module({
   imports: [
@@ -21,8 +21,8 @@ import { MissionModule } from './modules/mission/infrastructure/mission.module';
     }),
     DroneModule,
     MissionModule,
+    MaintenanceModule,
+    FleetHealthModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
 })
 export class AppModule {}

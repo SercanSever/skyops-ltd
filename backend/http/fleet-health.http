@@ -1,0 +1,2 @@
+### Fleet Health Report
+GET http://localhost:3000/api/fleet-health

@@ -1,5 +1,11 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { MainLayout } from "@/components/layout/MainLayout";
+import { DashboardPage } from "@/pages/DashboardPage";
+import { DronesPage } from "@/pages/DronesPage";
+import { DroneDetailPage } from "@/pages/DroneDetailPage";
+import { MissionsPage } from "@/pages/MissionsPage";
+import { MaintenancePage } from "@/pages/MaintenancePage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -8,28 +14,25 @@ const queryClient = new QueryClient({
       retry: 1,
     },
   },
-})
-
-function DashboardPage() {
-  return (
-    <div className="p-8">
-      <h1 className="text-3xl font-bold">SkyOps Mission Control</h1>
-      <p className="mt-2 text-muted-foreground">Dashboard — Coming soon</p>
-    </div>
-  )
-}
+});
 
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<DashboardPage />} />
+          <Route element={<MainLayout />}>
+            <Route path="/" element={<DashboardPage />} />
+            <Route path="/drones" element={<DronesPage />} />
+            <Route path="/drones/:id" element={<DroneDetailPage />} />
+            <Route path="/missions" element={<MissionsPage />} />
+            <Route path="/maintenance" element={<MaintenancePage />} />
+          </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>
     </QueryClientProvider>
-  )
+  );
 }
 
-export default App
+export default App;
