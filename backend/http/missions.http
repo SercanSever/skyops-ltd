@@ -1,0 +1,147 @@
+### --- Prerequisites: Create a drone first ---
+
+### Create Drone (for mission tests)
+POST http://localhost:3000/api/drones
+Content-Type: application/json
+
+{
+  "serialNumber": "SKY-MS01-TE5T",
+  "model": "PHANTOM_4"
+}
+
+### --- Mission CRUD ---
+
+### Create Mission
+POST http://localhost:3000/api/missions
+Content-Type: application/json
+
+{
+  "name": "Wind Farm Alpha Inspection",
+  "type": "WIND_TURBINE_INSPECTION",
+  "droneId": "{{droneId}}",
+  "pilotName": "John Doe",
+  "siteLocation": "Wind Farm Alpha - North Sector",
+  "plannedStartTime": "2027-01-15T10:00:00Z",
+  "plannedEndTime": "2027-01-15T14:00:00Z"
+}
+
+### List Missions (paginated)
+GET http://localhost:3000/api/missions?page=1&limit=10
+
+### List Missions (filtered by status)
+GET http://localhost:3000/api/missions?status=PLANNED
+
+### List Missions (filtered by droneId)
+GET http://localhost:3000/api/missions?droneId={{droneId}}
+
+### Get Mission by ID
+GET http://localhost:3000/api/missions/{{missionId}}
+
+### --- State Transitions ---
+
+### Transition: PLANNED → PRE_FLIGHT_CHECK
+PATCH http://localhost:3000/api/missions/{{missionId}}/transition
+Content-Type: application/json
+
+{
+  "status": "PRE_FLIGHT_CHECK"
+}
+
+### Transition: PRE_FLIGHT_CHECK → IN_PROGRESS
+PATCH http://localhost:3000/api/missions/{{missionId}}/transition
+Content-Type: application/json
+
+{
+  "status": "IN_PROGRESS"
+}
+
+### Transition: IN_PROGRESS → COMPLETED
+PATCH http://localhost:3000/api/missions/{{missionId}}/transition
+Content-Type: application/json
+
+{
+  "status": "COMPLETED",
+  "flightHours": 2.5
+}
+
+### Transition: PLANNED → ABORTED (with reason)
+PATCH http://localhost:3000/api/missions/{{missionId}}/transition
+Content-Type: application/json
+
+{
+  "status": "ABORTED",
+  "abortReason": "Weather conditions deteriorated"
+}
+
+### Transition: PLANNED → ABORTED (without reason)
+PATCH http://localhost:3000/api/missions/{{missionId}}/transition
+Content-Type: application/json
+
+{
+  "status": "ABORTED"
+}
+
+### --- Validation Error Cases ---
+
+### Invalid: Schedule in the past (should fail 422)
+POST http://localhost:3000/api/missions
+Content-Type: application/json
+
+{
+  "name": "Past Mission",
+  "type": "SOLAR_PANEL_SURVEY",
+  "droneId": "{{droneId}}",
+  "pilotName": "Jane",
+  "siteLocation": "Solar Farm",
+  "plannedStartTime": "2020-01-01T10:00:00Z",
+  "plannedEndTime": "2020-01-01T14:00:00Z"
+}
+
+### Invalid: End before start (should fail 422)
+POST http://localhost:3000/api/missions
+Content-Type: application/json
+
+{
+  "name": "Bad Times",
+  "type": "POWER_LINE_PATROL",
+  "droneId": "{{droneId}}",
+  "pilotName": "Jane",
+  "siteLocation": "Power Line Grid",
+  "plannedStartTime": "2027-06-01T14:00:00Z",
+  "plannedEndTime": "2027-06-01T10:00:00Z"
+}
+
+### Invalid: Overlapping mission (should fail 409 — run Create Mission first)
+POST http://localhost:3000/api/missions
+Content-Type: application/json
+
+{
+  "name": "Overlapping Mission",
+  "type": "SOLAR_PANEL_SURVEY",
+  "droneId": "{{droneId}}",
+  "pilotName": "Jane",
+  "siteLocation": "Solar Farm",
+  "plannedStartTime": "2027-01-15T12:00:00Z",
+  "plannedEndTime": "2027-01-15T16:00:00Z"
+}
+
+### Invalid: Invalid transition (should fail 422)
+PATCH http://localhost:3000/api/missions/{{missionId}}/transition
+Content-Type: application/json
+
+{
+  "status": "COMPLETED"
+}
+
+### Invalid: Missing droneId (should fail 400)
+POST http://localhost:3000/api/missions
+Content-Type: application/json
+
+{
+  "name": "No Drone",
+  "type": "WIND_TURBINE_INSPECTION",
+  "pilotName": "Jane",
+  "siteLocation": "Site",
+  "plannedStartTime": "2027-06-01T10:00:00Z",
+  "plannedEndTime": "2027-06-01T14:00:00Z"
+}
