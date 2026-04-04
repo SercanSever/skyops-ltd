@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -22,10 +23,17 @@ function formatDate(iso: string | null): string {
 
 export function DroneInfo({ drone }: DroneInfoProps) {
   const retireDrone = useRetireDrone();
+  const [retireError, setRetireError] = useState("");
 
-  function handleRetire() {
-    if (confirm("Are you sure you want to retire this drone?")) {
-      retireDrone.mutate(drone.id);
+  async function handleRetire() {
+    if (!confirm("Are you sure you want to retire this drone?")) return;
+    setRetireError("");
+    try {
+      await retireDrone.mutateAsync(drone.id);
+    } catch (err) {
+      setRetireError(
+        err instanceof Error ? err.message : "Failed to retire drone",
+      );
     }
   }
 
@@ -62,10 +70,13 @@ export function DroneInfo({ drone }: DroneInfoProps) {
         {drone.status === "AVAILABLE" && (
           <>
             <Separator />
+            {retireError && (
+              <p className="text-sm text-destructive">{retireError}</p>
+            )}
             <div className="flex justify-end">
               <Button
                 variant="outline"
-                onClick={handleRetire}
+                onClick={() => void handleRetire()}
                 disabled={retireDrone.isPending}
                 className="text-destructive hover:bg-destructive/10"
               >

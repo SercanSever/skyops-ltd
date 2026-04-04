@@ -1,7 +1,9 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { useCompleteMaintenance } from "@/hooks/use-maintenance";
 import type { MaintenanceLog } from "@/types/maintenance.types";
-import { User, Calendar } from "lucide-react";
+import { User, Calendar, CheckCircle } from "lucide-react";
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString("en-US", {
@@ -23,8 +25,10 @@ interface MaintenanceCardProps {
 }
 
 export function MaintenanceCard({ log }: MaintenanceCardProps) {
+  const completeMaintenance = useCompleteMaintenance();
+
   return (
-    <Card className="transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5">
+    <Card>
       <CardContent className="space-y-3">
         <div className="flex items-start justify-between gap-2">
           <Badge variant="outline">{formatType(log.type)}</Badge>
@@ -45,10 +49,23 @@ export function MaintenanceCard({ log }: MaintenanceCardProps) {
         </div>
 
         {log.notes && (
-          <p className="line-clamp-2 border-t pt-2.5 text-xs text-muted-foreground/80">
+          <p className="line-clamp-2 text-xs text-muted-foreground/80">
             {log.notes}
           </p>
         )}
+
+        <div className="border-t pt-2.5">
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full"
+            disabled={completeMaintenance.isPending}
+            onClick={() => completeMaintenance.mutate(log.id)}
+          >
+            <CheckCircle className="mr-1 h-3.5 w-3.5" />
+            Complete
+          </Button>
+        </div>
       </CardContent>
     </Card>
   );

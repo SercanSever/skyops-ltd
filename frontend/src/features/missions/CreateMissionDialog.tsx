@@ -25,7 +25,10 @@ export function CreateMissionDialog() {
   const [error, setError] = useState("");
 
   const createMission = useCreateMission();
-  const { data: dronesData } = useDrones({ status: "AVAILABLE", limit: 100 });
+  const { data: dronesData, refetch: refetchDrones } = useDrones({
+    status: "AVAILABLE",
+    limit: 100,
+  });
 
   function resetForm() {
     setName("");
@@ -54,6 +57,18 @@ export function CreateMissionDialog() {
       return;
     }
 
+    if (new Date(plannedStartTime).getTime() <= Date.now()) {
+      setError("Planned start time must be in the future");
+      return;
+    }
+
+    if (
+      new Date(plannedEndTime).getTime() <= new Date(plannedStartTime).getTime()
+    ) {
+      setError("Planned end time must be after start time");
+      return;
+    }
+
     try {
       await createMission.mutateAsync({
         name,
@@ -73,7 +88,12 @@ export function CreateMissionDialog() {
 
   return (
     <>
-      <Button onClick={() => setOpen(true)}>
+      <Button
+        onClick={() => {
+          void refetchDrones();
+          setOpen(true);
+        }}
+      >
         <Plus className="mr-2 h-4 w-4" />
         New Mission
       </Button>

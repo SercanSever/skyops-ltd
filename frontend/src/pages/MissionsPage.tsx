@@ -13,13 +13,22 @@ import type { MissionStatus } from "@/types/mission.types";
 export function MissionsPage() {
   const [page, setPage] = useState(1);
   const [status, setStatus] = useState<MissionStatus | undefined>();
+  const [droneId, setDroneId] = useState<string | undefined>();
+  const [startDate, setStartDate] = useState<string | undefined>();
+  const [endDate, setEndDate] = useState<string | undefined>();
   const [view, setView] = useViewPreference();
   const limit = 12;
 
-  const { data, isLoading } = useMissions({ page, limit, status });
+  const { data, isLoading } = useMissions({
+    page,
+    limit,
+    status,
+    droneId,
+    startDate,
+    endDate,
+  });
 
-  function handleStatusChange(s: MissionStatus | undefined) {
-    setStatus(s);
+  function handleFilterChange() {
     setPage(1);
   }
 
@@ -38,7 +47,28 @@ export function MissionsPage() {
         </div>
       </div>
 
-      <MissionFilters status={status} onStatusChange={handleStatusChange} />
+      <MissionFilters
+        status={status}
+        droneId={droneId}
+        startDate={startDate}
+        endDate={endDate}
+        onStatusChange={(s) => {
+          setStatus(s);
+          handleFilterChange();
+        }}
+        onDroneIdChange={(d) => {
+          setDroneId(d);
+          handleFilterChange();
+        }}
+        onStartDateChange={(d) => {
+          setStartDate(d);
+          handleFilterChange();
+        }}
+        onEndDateChange={(d) => {
+          setEndDate(d);
+          handleFilterChange();
+        }}
+      />
 
       {isLoading ? (
         <div
