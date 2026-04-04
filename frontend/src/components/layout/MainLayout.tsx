@@ -1,6 +1,6 @@
-import { Outlet } from 'react-router-dom';
-import { Sidebar } from './Sidebar';
-import { MobileSidebar } from './MobileSidebar';
+import { Outlet } from "react-router-dom";
+import { Sidebar } from "./Sidebar";
+import { MobileSidebar } from "./MobileSidebar";
 
 export function MainLayout() {
   return (

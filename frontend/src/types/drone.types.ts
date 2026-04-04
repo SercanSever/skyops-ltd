@@ -1,5 +1,9 @@
-export type DroneStatus = 'AVAILABLE' | 'IN_MISSION' | 'MAINTENANCE' | 'RETIRED';
-export type DroneModel = 'PHANTOM_4' | 'MATRICE_300' | 'MAVIC_3_ENTERPRISE';
+export type DroneStatus =
+  | "AVAILABLE"
+  | "IN_MISSION"
+  | "MAINTENANCE"
+  | "RETIRED";
+export type DroneModel = "PHANTOM_4" | "MATRICE_300" | "MAVIC_3_ENTERPRISE";
 
 export interface Drone {
   id: string;

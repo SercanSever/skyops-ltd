@@ -1,14 +1,14 @@
-import { useState } from 'react';
-import { NavLink } from 'react-router-dom';
-import { Menu, LayoutDashboard, Plane, Target, Wrench } from 'lucide-react';
-import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
-import { cn } from '@/lib/utils';
+import { useState } from "react";
+import { NavLink } from "react-router-dom";
+import { Menu, LayoutDashboard, Plane, Target, Wrench } from "lucide-react";
+import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
+import { cn } from "@/lib/utils";
 
 const navItems = [
-  { to: '/', label: 'Dashboard', icon: LayoutDashboard },
-  { to: '/drones', label: 'Drones', icon: Plane },
-  { to: '/missions', label: 'Missions', icon: Target },
-  { to: '/maintenance', label: 'Maintenance', icon: Wrench },
+  { to: "/", label: "Dashboard", icon: LayoutDashboard },
+  { to: "/drones", label: "Drones", icon: Plane },
+  { to: "/missions", label: "Missions", icon: Target },
+  { to: "/maintenance", label: "Maintenance", icon: Wrench },
 ];
 
 export function MobileSidebar() {
@@ -32,14 +32,14 @@ export function MobileSidebar() {
               <NavLink
                 key={item.to}
                 to={item.to}
-                end={item.to === '/'}
+                end={item.to === "/"}
                 onClick={() => setOpen(false)}
                 className={({ isActive }) =>
                   cn(
-                    'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
+                    "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
                     isActive
-                      ? 'bg-primary text-primary-foreground'
-                      : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground",
                   )
                 }
               >
