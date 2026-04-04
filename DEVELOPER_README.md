@@ -124,7 +124,7 @@ SELECT status, COUNT(*) FROM drones GROUP BY status;
 
 ```text
 postgresql://user:password@host:port/database
-postgresql://skyops:***REDACTED***@localhost:5432/skyops_db
+postgresql://<DATABASE_USER>:<DATABASE_PASSWORD>@<DATABASE_HOST>:<DATABASE_PORT>/<DATABASE_NAME>
 ```
 
 ---

@@ -29,21 +29,8 @@ cd skyops-ltd
 cp .env.example .env
 ```
 
-Fill in `.env` with these development values:
-
-```env
-DATABASE_HOST=localhost
-DATABASE_PORT=5432
-DATABASE_USER=skyops
-DATABASE_PASSWORD=***REDACTED***
-DATABASE_NAME=skyops_db
-PORT=3000
-NODE_ENV=development
-CORS_ORIGIN=http://localhost:5173
-VITE_API_URL=http://localhost:3000/api
-PGADMIN_DEFAULT_EMAIL=***REDACTED***
-PGADMIN_DEFAULT_PASSWORD=***REDACTED***
-```
+Fill in `.env` with the required values. See `.env.example` for the list of variables needed.
+The actual environment values will be shared via email by the team.
 
 ```bash
 # 2. Use the correct Node.js version
@@ -119,9 +106,7 @@ The Vite dev server proxies `/api` requests to `http://localhost:3000`, so the f
 docker compose up -d pgadmin    # http://localhost:5050
 ```
 
-**Login credentials:**
-- Email: `***REDACTED***`
-- Password: `admin`
+**Login credentials:** Use the `PGADMIN_DEFAULT_EMAIL` and `PGADMIN_DEFAULT_PASSWORD` values from your `.env` file.
 
 **Adding the database server in pgAdmin:**
 
@@ -130,8 +115,8 @@ docker compose up -d pgadmin    # http://localhost:5050
 3. **Connection** tab:
    - Host: `postgres` (not `localhost` — this is the Docker network name)
    - Port: `5432`
-   - Username: `skyops`
-   - Password: `***REDACTED***`
+   - Username: use `DATABASE_USER` from your `.env`
+   - Password: use `DATABASE_PASSWORD` from your `.env`
 4. Click "Save"
 
 ---
