@@ -73,12 +73,21 @@ Content-Type: application/json
   "abortReason": "Weather conditions deteriorated"
 }
 
-### Transition: PLANNED → ABORTED (without reason)
+### Transition: PLANNED → ABORTED (without reason — should fail 422)
 PATCH http://localhost:3000/api/missions/{{missionId}}/transition
 Content-Type: application/json
 
 {
   "status": "ABORTED"
+}
+
+### Transition: PLANNED → ABORTED (with reason)
+PATCH http://localhost:3000/api/missions/{{missionId}}/transition
+Content-Type: application/json
+
+{
+  "status": "ABORTED",
+  "abortReason": "Client requested cancellation"
 }
 
 ### --- Validation Error Cases ---
