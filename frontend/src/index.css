@@ -140,6 +140,14 @@ body {
     @apply outline-2 outline-offset-2 outline-ring;
   }
 
+  button,
+  [role="button"],
+  a,
+  select,
+  summary {
+    cursor: pointer;
+  }
+
   ::-webkit-scrollbar {
     width: 6px;
   }

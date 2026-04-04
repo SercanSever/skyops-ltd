@@ -1,17 +1,25 @@
 import { useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useDrones } from "@/hooks/use-drones";
 import { DroneTable } from "@/features/drones/DroneTable";
+import { DroneCard } from "@/features/drones/DroneCard";
 import { DroneFilters } from "@/features/drones/DroneFilters";
 import { CreateDroneDialog } from "@/features/drones/CreateDroneDialog";
+import { ViewToggle } from "@/components/ui/view-toggle";
+import { useViewPreference } from "@/hooks/use-view-preference";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { DroneStatus, DroneModel } from "@/types/drone.types";
 
 export function DronesPage() {
+  const [searchParams] = useSearchParams();
   const [page, setPage] = useState(1);
-  const [status, setStatus] = useState<DroneStatus | undefined>();
+  const [status, setStatus] = useState<DroneStatus | undefined>(
+    (searchParams.get("status") as DroneStatus) || undefined,
+  );
   const [model, setModel] = useState<DroneModel | undefined>();
-  const limit = 10;
+  const [view, setView] = useViewPreference();
+  const limit = 12;
 
   const { data, isLoading } = useDrones({ page, limit, status, model });
 
@@ -34,7 +42,10 @@ export function DronesPage() {
             Manage your drone fleet
           </p>
         </div>
-        <CreateDroneDialog />
+        <div className="flex items-center gap-2">
+          <ViewToggle view={view} onViewChange={setView} />
+          <CreateDroneDialog />
+        </div>
       </div>
 
       <DroneFilters
@@ -45,14 +56,43 @@ export function DronesPage() {
       />
 
       {isLoading ? (
-        <div className="space-y-2">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="h-12 animate-pulse rounded-lg bg-muted" />
+        <div
+          className={
+            view === "grid"
+              ? "grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
+              : "space-y-2"
+          }
+        >
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div
+              key={i}
+              className={
+                view === "grid"
+                  ? "h-40 animate-pulse rounded-xl bg-muted"
+                  : "h-12 animate-pulse rounded-lg bg-muted"
+              }
+            />
           ))}
         </div>
       ) : data ? (
         <>
-          <DroneTable drones={data.data} />
+          {view === "grid" ? (
+            data.data.length === 0 ? (
+              <div className="rounded-lg border p-8 text-center">
+                <p className="text-sm text-muted-foreground">
+                  No drones found.
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {data.data.map((drone) => (
+                  <DroneCard key={drone.id} drone={drone} />
+                ))}
+              </div>
+            )
+          ) : (
+            <DroneTable drones={data.data} />
+          )}
 
           {data.meta.totalPages > 1 && (
             <div className="flex items-center justify-between">

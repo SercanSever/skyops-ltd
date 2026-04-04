@@ -9,32 +9,15 @@ import { RecentActivity } from "@/features/dashboard/RecentActivity";
 import { Activity } from "lucide-react";
 
 export function DashboardPage() {
-  const { data, isLoading, error, dataUpdatedAt } = useFleetHealth();
+  const { data, isLoading, error } = useFleetHealth();
 
   return (
     <div className="space-y-8">
-      <div className="flex items-start justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
-          <p className="text-sm text-muted-foreground">
-            Fleet overview and operational status
-          </p>
-        </div>
-        {data && (
-          <div className="hidden sm:flex items-center gap-2 rounded-lg border bg-card px-3 py-1.5">
-            <span className="relative flex h-2 w-2">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
-            </span>
-            <span className="text-xs text-muted-foreground">
-              Live &middot;{" "}
-              {new Date(dataUpdatedAt).toLocaleTimeString("en-US", {
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
-            </span>
-          </div>
-        )}
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
+        <p className="text-sm text-muted-foreground">
+          Fleet overview and operational status
+        </p>
       </div>
 
       {error ? (
