@@ -599,8 +599,6 @@ export class DroneMapper {
 
 ## 7. React + TanStack Query
 
-> This section will be expanded in detail when frontend development begins.
-
 ### What is TanStack Query (React Query)?
 
 A server state management library. It caches data from APIs, automatically refetches, and manages loading/error states.
@@ -611,6 +609,63 @@ A server state management library. It caches data from APIs, automatically refet
 - Automatic caching and cache invalidation
 - Background refetching
 - Optimistic updates support
+
+### QueryClient Configuration
+
+Global defaults are set in `App.tsx`:
+
+```typescript
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 30_000, // Data considered fresh for 30 seconds
+      retry: 1,          // Retry failed requests once
+    },
+  },
+});
+```
+
+### Query Key Strategy
+
+Query keys follow a consistent naming convention across all hooks:
+
+| Hook | Query Key | Description |
+|---|---|---|
+| `useDrones(params)` | `["drones", params]` | List with filters/pagination |
+| `useDrone(id)` | `["drones", id]` | Single drone |
+| `useMissions(params)` | `["missions", params]` | List with filters/pagination |
+| `useMission(id)` | `["missions", id]` | Single mission |
+| `useMaintenanceLogs(params)` | `["maintenance-logs", params]` | List with filters/pagination |
+| `useMaintenanceLog(id)` | `["maintenance-logs", id]` | Single maintenance record |
+| `useFleetHealth()` | `["fleet-health"]` | Fleet health report (refetchInterval: 60s) |
+
+### Cross-Resource Cache Invalidation
+
+Mutations invalidate not just their own resource, but also dependent resources:
+
+```typescript
+// Example: useTransitionMission invalidates 3 resources
+// because a mission transition can change drone status and fleet health
+const useTransitionMission = () => useMutation({
+  mutationFn: transitionMission,
+  onSuccess: () => {
+    queryClient.invalidateQueries({ queryKey: ['missions'] });
+    queryClient.invalidateQueries({ queryKey: ['drones'] });       // drone status may change
+    queryClient.invalidateQueries({ queryKey: ['fleet-health'] }); // fleet stats may change
+  },
+});
+```
+
+**Invalidation map:**
+
+| Mutation | Invalidates |
+|---|---|
+| Create/retire/delete drone | `drones`, `fleet-health` |
+| Update drone | `drones` |
+| Create mission | `missions`, `fleet-health` |
+| Transition mission | `missions`, `drones`, `fleet-health` |
+| Create maintenance log | `maintenance-logs`, `drones`, `fleet-health` |
+| Complete maintenance | `maintenance-logs`, `drones`, `fleet-health` |
 
 ### Basic Usage
 
@@ -632,30 +687,21 @@ const mutation = useMutation({
 
 ### Built-in Fetch API
 
-In this project, we use the browser's native `fetch` API instead of Axios:
+In this project, we use the browser's native `fetch` API instead of Axios. The wrapper is in `src/api/client.ts`:
 
 ```typescript
-const API_URL = import.meta.env.VITE_API_URL;
-
-async function fetchDrones(params: PaginationParams): Promise<PaginatedResponse<Drone>> {
-  const searchParams = new URLSearchParams();
-  searchParams.set('page', String(params.page));
-  searchParams.set('limit', String(params.limit));
-
-  const response = await fetch(`${API_URL}/drones?${searchParams}`);
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message);
-  }
-  return response.json();
-}
+// Generic typed helpers
+apiGet<T>(path, params?)    // GET with query params (undefined values filtered)
+apiPost<T>(path, body?)     // POST with JSON body
+apiPatch<T>(path, body?)    // PATCH with JSON body
+apiDelete<T>(path)          // DELETE (returns undefined for 204)
 ```
+
+Custom `ApiError` class carries `statusCode`, `error`, and `details` from the backend error response format.
 
 ---
 
 ## 8. Tailwind + shadcn/ui
-
-> This section will be expanded in detail when frontend development begins.
 
 ### Tailwind CSS
 
@@ -696,6 +742,24 @@ export function cn(...inputs: ClassValue[]) {
 <div className={cn('p-4', isActive && 'bg-blue-500', className)} />
 ```
 
+### Components Used in This Project
+
+| Component | Usage |
+|---|---|
+| `badge` | Status labels (drone status, mission status) |
+| `button` | Actions, form submit, state transitions |
+| `card` | Dashboard cards, detail sections |
+| `dialog` | Create/edit forms, confirmation modals |
+| `input` | Text fields in forms |
+| `select` | Dropdowns (model, type, status filters) |
+| `separator` | Visual dividers |
+| `sheet` | Side panel / mobile navigation |
+| `table` | Data tables (drones, missions, maintenance) |
+
+### Responsive Design
+
+The layout uses a sidebar navigation on desktop and a sheet-based mobile menu. Tailwind's responsive prefixes (`sm:`, `md:`, `lg:`) control visibility and layout shifts.
+
 ---
 
 ## 9. API Endpoint List
@@ -726,6 +790,7 @@ export function cn(...inputs: ClassValue[]) {
 | GET | `/api/maintenance-logs` | List all maintenance records (paginated) |
 | GET | `/api/maintenance-logs/:id` | Single maintenance record details |
 | POST | `/api/maintenance-logs` | Create a new maintenance record |
+| PATCH | `/api/maintenance-logs/:id/complete` | Complete maintenance (drone → AVAILABLE) |
 
 ### Fleet Health
 
