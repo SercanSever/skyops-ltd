@@ -51,6 +51,7 @@ jobs:
 
   test-e2e:
     name: E2E Tests
+    if: false # Disabled until Playwright tests are created (Phase 21)
     runs-on: ubuntu-latest
     needs: build
     services:
