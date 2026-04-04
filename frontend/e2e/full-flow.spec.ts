@@ -4,8 +4,12 @@ test.describe("Full Flow", () => {
   test("should complete full drone → mission lifecycle", async ({ page }) => {
     // 1. Dashboard — fleet overview visible
     await page.goto("/");
-    await expect(page.getByText("Dashboard")).toBeVisible();
-    await expect(page.getByText("Available")).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Dashboard" }),
+    ).toBeVisible();
+    await expect(
+      page.getByText("Fleet overview and operational status"),
+    ).toBeVisible();
 
     // 2. Navigate to Drones page
     await page.getByRole("link", { name: "Drones" }).click();
@@ -33,12 +37,16 @@ test.describe("Full Flow", () => {
     await page.getByRole("button", { name: "New Mission" }).click();
     await expect(page.getByText("Create New Mission")).toBeVisible();
 
-    await page.getByPlaceholder("Wind Farm Alpha Inspection").fill("E2E Test Mission");
+    await page
+      .getByPlaceholder("Wind Farm Alpha Inspection")
+      .fill("E2E Test Mission");
     await page.getByPlaceholder("John Doe").fill("E2E Pilot");
     await page.getByPlaceholder("Wind Farm Alpha").fill("E2E Test Site");
 
     // Select the drone we just created
-    const droneSelect = page.locator('select').filter({ has: page.getByText('Select drone...') });
+    const droneSelect = page
+      .locator("select")
+      .filter({ has: page.getByText("Select drone...") });
     await droneSelect.selectOption({ label: serialNumber });
 
     // Set future dates
@@ -58,25 +66,37 @@ test.describe("Full Flow", () => {
     await expect(page.getByText("E2E Test Mission")).toBeVisible();
 
     // 6. Transition: PLANNED → PRE_FLIGHT_CHECK
-    await page.getByRole("button", { name: "Start Pre-Flight" }).first().click();
-    await expect(page.getByText("Pre-Flight")).toBeVisible();
+    await page
+      .getByRole("button", { name: "Start Pre-Flight" })
+      .first()
+      .click();
+    await expect(page.getByText("Pre-Flight").first()).toBeVisible();
 
     // 7. Transition: PRE_FLIGHT_CHECK → IN_PROGRESS
     await page.getByRole("button", { name: "Start Mission" }).first().click();
-    await expect(page.getByText("In Progress")).toBeVisible();
+    await expect(page.getByText("In Progress").first()).toBeVisible();
 
     // 8. Transition: IN_PROGRESS → COMPLETED
     await page.getByRole("button", { name: "Complete" }).first().click();
-    await expect(page.getByText("Complete Mission")).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Complete Mission" }),
+    ).toBeVisible();
     await page.getByPlaceholder("e.g. 2.5").fill("2.5");
-    await page.getByRole("button", { name: "Complete" }).last().click();
+    await page
+      .locator("form")
+      .getByRole("button", { name: "Complete" })
+      .click();
 
     // Verify completed
     await expect(page.getByText("Completed").first()).toBeVisible();
 
     // 9. Navigate back to Dashboard
     await page.getByRole("link", { name: "Dashboard" }).click();
-    await expect(page.getByText("Dashboard")).toBeVisible();
-    await expect(page.getByText("Fleet overview")).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Dashboard" }),
+    ).toBeVisible();
+    await expect(
+      page.getByText("Fleet overview and operational status"),
+    ).toBeVisible();
   });
 });
