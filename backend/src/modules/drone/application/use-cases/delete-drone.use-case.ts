@@ -19,6 +19,24 @@ export class DeleteDroneUseCase {
       );
     }
 
-    await this.droneRepository.delete(id);
+    const hasScheduledMissions =
+      await this.droneRepository.hasScheduledMissions(id);
+    if (hasScheduledMissions) {
+      throw new BusinessRuleViolationException(
+        'Cannot delete drone with scheduled missions',
+        409,
+        { droneId: id },
+      );
+    }
+
+    try {
+      await this.droneRepository.delete(id);
+    } catch {
+      throw new BusinessRuleViolationException(
+        'Cannot delete drone with related mission or maintenance records',
+        409,
+        { droneId: id },
+      );
+    }
   }
 }

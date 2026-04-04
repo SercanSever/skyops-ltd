@@ -92,12 +92,17 @@ export function MissionActions({ mission }: MissionActionsProps) {
 
   async function handleAbort(e: React.FormEvent) {
     e.preventDefault();
+    setError("");
+    if (!abortReason.trim()) {
+      setError("Abort reason is required");
+      return;
+    }
     try {
       await transitionMission.mutateAsync({
         id: mission.id,
         data: {
           status: "ABORTED",
-          abortReason: abortReason || undefined,
+          abortReason,
         },
       });
       setDialogType(null);
@@ -195,7 +200,7 @@ export function MissionActions({ mission }: MissionActionsProps) {
               className="mt-4 space-y-4"
             >
               <div className="space-y-2">
-                <label className="text-sm font-medium">Reason (optional)</label>
+                <label className="text-sm font-medium">Reason</label>
                 <Input
                   placeholder="e.g. Weather conditions"
                   value={abortReason}

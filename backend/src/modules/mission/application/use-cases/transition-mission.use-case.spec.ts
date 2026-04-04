@@ -151,6 +151,7 @@ describe('TransitionMissionUseCase', () => {
 
     const result = await useCase.execute('mission-123', {
       status: MissionStatus.ABORTED,
+      abortReason: 'Client cancellation',
     });
 
     expect(result.status).toBe(MissionStatus.ABORTED);
