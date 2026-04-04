@@ -5,7 +5,7 @@ Drone fleet management, mission scheduling, and maintenance tracking application
 ## Tech Stack
 
 | Layer | Technology |
-|-------|-----------|
+| ----- | --------- |
 | Backend | NestJS (TypeScript), TypeORM |
 | Database | PostgreSQL 16 |
 | Frontend | React 19 (TypeScript), Vite, Tailwind CSS v4, shadcn/ui, TanStack Query |
@@ -43,10 +43,10 @@ docker compose up -d
 After all containers are running, the application is available at:
 
 | Service | URL |
-|---------|-----|
-| Frontend | http://localhost:5173 |
-| Backend API | http://localhost:3000/api |
-| pgAdmin (DB GUI) | http://localhost:5050 |
+| ------- | --- |
+| Frontend | `http://localhost:5173` |
+| Backend API | `http://localhost:3000/api` |
+| pgAdmin (DB GUI) | `http://localhost:5050` |
 
 ---
 
@@ -126,7 +126,7 @@ docker compose up -d pgadmin    # http://localhost:5050
 ### Drones
 
 | Method | URL | Description |
-|--------|-----|-------------|
+| ------ | --- | ----------- |
 | POST | `/api/drones` | Create a new drone |
 | GET | `/api/drones` | List drones (paginated, filterable by status/model) |
 | GET | `/api/drones/:id` | Get drone details |
@@ -137,7 +137,7 @@ docker compose up -d pgadmin    # http://localhost:5050
 ### Missions
 
 | Method | URL | Description |
-|--------|-----|-------------|
+| -------- | ----- | ------------- |
 | POST | `/api/missions` | Create a mission |
 | GET | `/api/missions` | List missions (paginated, filterable by status/droneId/date) |
 | GET | `/api/missions/:id` | Get mission details |
@@ -146,7 +146,7 @@ docker compose up -d pgadmin    # http://localhost:5050
 ### Maintenance Logs
 
 | Method | URL | Description |
-|--------|-----|-------------|
+| ------ | --- | ----------- |
 | POST | `/api/maintenance-logs` | Create maintenance log |
 | GET | `/api/maintenance-logs` | List logs (paginated, filterable) |
 | GET | `/api/maintenance-logs/:id` | Get log details |
@@ -155,7 +155,7 @@ docker compose up -d pgadmin    # http://localhost:5050
 ### Fleet Health
 
 | Method | URL | Description |
-|--------|-----|-------------|
+| ------ | --- | ----------- |
 | GET | `/api/fleet-health` | Fleet health dashboard report |
 
 ---
@@ -190,6 +190,9 @@ npm run lint
 
 # Build check (TypeScript + Vite)
 npm run build
+
+# E2E tests (requires backend running)
+npx playwright test
 ```
 
 ---
@@ -203,9 +206,9 @@ cd backend && npm run seed
 ```
 
 | Table | Count | Details |
-|-------|-------|---------|
-| Drones | 25 | 12 AVAILABLE, 5 IN_MISSION, 4 MAINTENANCE, 4 RETIRED |
-| Missions | 55 | 25 COMPLETED, 15 PLANNED, 5 PRE_FLIGHT_CHECK, 5 IN_PROGRESS, 5 ABORTED |
+| ----- | ----- | ------- |
+| Drones | 25 | 12 AVAILABLE, 5 IN\_MISSION, 4 MAINTENANCE, 4 RETIRED |
+| Missions | 55 | 25 COMPLETED, 15 PLANNED, 5 PRE\_FLIGHT\_CHECK, 5 IN\_PROGRESS, 5 ABORTED |
 | Maintenance Logs | 35 | All 5 types, various technicians and dates |
 
 The script is idempotent — safe to re-run (truncates and re-inserts).
@@ -214,7 +217,7 @@ The script is idempotent — safe to re-run (truncates and re-inserts).
 
 ## Project Architecture
 
-```
+```text
 DDD + Clean Architecture — 4 layers per domain module
 
 ┌─────────────────────────────────┐
@@ -230,7 +233,7 @@ DDD + Clean Architecture — 4 layers per domain module
 Dependencies flow inward only. Domain layer is pure TypeScript.
 ```
 
-```
+```text
 skyops-ltd/
 ├── backend/                 # NestJS + TypeORM + PostgreSQL
 │   └── src/modules/
@@ -253,7 +256,7 @@ skyops-ltd/
 ## Docker Services
 
 | Service | Container | Port | Description |
-|---------|-----------|------|-------------|
+| ------- | --------- | ---- | ----------- |
 | PostgreSQL | `skyops-postgres` | 5432 | Database |
 | pgAdmin | `skyops-pgadmin` | 5050 | Database GUI |
 | Backend | `skyops-backend` | 3000 | NestJS API |
@@ -284,7 +287,7 @@ docker compose logs -f backend
 ## Environment Variables
 
 | Variable | Description | Default |
-|----------|-------------|---------|
+| -------- | ----------- | ------- |
 | `DATABASE_HOST` | PostgreSQL host | `localhost` |
 | `DATABASE_PORT` | PostgreSQL port | `5432` |
 | `DATABASE_USER` | Database username | — |
