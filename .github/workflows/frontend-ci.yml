@@ -51,7 +51,6 @@ jobs:
 
   test-e2e:
     name: E2E Tests
-    if: false # Disabled until Playwright tests are created (Phase 21)
     runs-on: ubuntu-latest
     needs: build
     services:
@@ -97,7 +96,7 @@ jobs:
         run: npm run start:dev &
 
       - name: Wait for backend
-        run: npx wait-on http://localhost:3000/api --timeout 30000
+        run: npx wait-on http://localhost:3000/api/fleet-health --timeout 60000
 
       - run: npm ci
 

@@ -1,0 +1,82 @@
+import { test, expect } from "@playwright/test";
+
+test.describe("Full Flow", () => {
+  test("should complete full drone → mission lifecycle", async ({ page }) => {
+    // 1. Dashboard — fleet overview visible
+    await page.goto("/");
+    await expect(page.getByText("Dashboard")).toBeVisible();
+    await expect(page.getByText("Available")).toBeVisible();
+
+    // 2. Navigate to Drones page
+    await page.getByRole("link", { name: "Drones" }).click();
+    await expect(page.getByText("Manage your drone fleet")).toBeVisible();
+
+    // 3. Create a new drone
+    await page.getByRole("button", { name: "New Drone" }).click();
+    await expect(page.getByText("Create New Drone")).toBeVisible();
+
+    const serialNumber = `SKY-E2E${String(Date.now()).slice(-1)}-TE5T`;
+    await page.getByPlaceholder("SKY-XXXX-XXXX").fill(serialNumber);
+    await page.getByRole("button", { name: "Create" }).click();
+
+    // Wait for dialog to close and drone to appear in list
+    await expect(page.getByText("Create New Drone")).not.toBeVisible();
+    await expect(page.getByText(serialNumber)).toBeVisible();
+
+    // 4. Navigate to Missions page
+    await page.getByRole("link", { name: "Missions" }).click();
+    await expect(
+      page.getByText("Schedule and manage drone missions"),
+    ).toBeVisible();
+
+    // 5. Create a new mission
+    await page.getByRole("button", { name: "New Mission" }).click();
+    await expect(page.getByText("Create New Mission")).toBeVisible();
+
+    await page.getByPlaceholder("Wind Farm Alpha Inspection").fill("E2E Test Mission");
+    await page.getByPlaceholder("John Doe").fill("E2E Pilot");
+    await page.getByPlaceholder("Wind Farm Alpha").fill("E2E Test Site");
+
+    // Select the drone we just created
+    const droneSelect = page.locator('select').filter({ has: page.getByText('Select drone...') });
+    await droneSelect.selectOption({ label: serialNumber });
+
+    // Set future dates
+    const now = new Date();
+    const start = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+    const end = new Date(start.getTime() + 4 * 60 * 60 * 1000);
+    const startStr = start.toISOString().slice(0, 16);
+    const endStr = end.toISOString().slice(0, 16);
+
+    await page.locator('input[type="datetime-local"]').first().fill(startStr);
+    await page.locator('input[type="datetime-local"]').last().fill(endStr);
+
+    await page.getByRole("button", { name: "Create Mission" }).click();
+
+    // Wait for dialog to close and mission to appear
+    await expect(page.getByText("Create New Mission")).not.toBeVisible();
+    await expect(page.getByText("E2E Test Mission")).toBeVisible();
+
+    // 6. Transition: PLANNED → PRE_FLIGHT_CHECK
+    await page.getByRole("button", { name: "Start Pre-Flight" }).first().click();
+    await expect(page.getByText("Pre-Flight")).toBeVisible();
+
+    // 7. Transition: PRE_FLIGHT_CHECK → IN_PROGRESS
+    await page.getByRole("button", { name: "Start Mission" }).first().click();
+    await expect(page.getByText("In Progress")).toBeVisible();
+
+    // 8. Transition: IN_PROGRESS → COMPLETED
+    await page.getByRole("button", { name: "Complete" }).first().click();
+    await expect(page.getByText("Complete Mission")).toBeVisible();
+    await page.getByPlaceholder("e.g. 2.5").fill("2.5");
+    await page.getByRole("button", { name: "Complete" }).last().click();
+
+    // Verify completed
+    await expect(page.getByText("Completed").first()).toBeVisible();
+
+    // 9. Navigate back to Dashboard
+    await page.getByRole("link", { name: "Dashboard" }).click();
+    await expect(page.getByText("Dashboard")).toBeVisible();
+    await expect(page.getByText("Fleet overview")).toBeVisible();
+  });
+});
