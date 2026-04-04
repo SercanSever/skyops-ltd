@@ -1,15 +1,25 @@
 import { useFleetHealth } from "@/hooks/use-fleet-health";
+import { useDrones } from "@/hooks/use-drones";
 import {
   FleetOverviewCards,
   FleetOverviewSkeleton,
 } from "@/features/dashboard/FleetOverviewCards";
 import { MaintenanceAlerts } from "@/features/dashboard/MaintenanceAlerts";
+import { getDueSoonDrones } from "@/features/dashboard/get-due-soon-drones";
 import { UpcomingMissions } from "@/features/dashboard/UpcomingMissions";
 import { RecentActivity } from "@/features/dashboard/RecentActivity";
 import { Activity } from "lucide-react";
+import { useMemo } from "react";
 
 export function DashboardPage() {
   const { data, isLoading, error } = useFleetHealth();
+  const { data: dronesData } = useDrones({ limit: 100 });
+
+  const dueSoonDrones = useMemo(() => {
+    if (!dronesData || !data) return [];
+    const overdueIds = new Set(data.overdueMaintenanceDrones.map((d) => d.id));
+    return getDueSoonDrones(dronesData.data, overdueIds);
+  }, [dronesData, data]);
 
   return (
     <div className="space-y-8">
@@ -43,7 +53,10 @@ export function DashboardPage() {
               Alerts & Scheduled
             </h2>
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-              <MaintenanceAlerts drones={data.overdueMaintenanceDrones} />
+              <MaintenanceAlerts
+                overdueDrones={data.overdueMaintenanceDrones}
+                dueSoonDrones={dueSoonDrones}
+              />
               <UpcomingMissions />
             </div>
           </section>

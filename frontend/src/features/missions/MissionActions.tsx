@@ -50,7 +50,7 @@ export function MissionActions({ mission }: MissionActionsProps) {
 
   if (transitions.length === 0) return null;
 
-  function handleSimpleTransition(target: MissionStatus) {
+  async function handleSimpleTransition(target: MissionStatus) {
     if (target === "COMPLETED") {
       setDialogType("complete");
       return;
@@ -59,10 +59,15 @@ export function MissionActions({ mission }: MissionActionsProps) {
       setDialogType("abort");
       return;
     }
-    transitionMission.mutate({
-      id: mission.id,
-      data: { status: target },
-    });
+    setError("");
+    try {
+      await transitionMission.mutateAsync({
+        id: mission.id,
+        data: { status: target },
+      });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Transition failed");
+    }
   }
 
   async function handleComplete(e: React.FormEvent) {
@@ -113,7 +118,7 @@ export function MissionActions({ mission }: MissionActionsProps) {
               variant={t.target === "ABORTED" ? "ghost" : "outline"}
               size="sm"
               disabled={transitionMission.isPending}
-              onClick={() => handleSimpleTransition(t.target)}
+              onClick={() => void handleSimpleTransition(t.target)}
               className={
                 t.target === "ABORTED"
                   ? "text-destructive hover:bg-destructive/10"
@@ -126,6 +131,7 @@ export function MissionActions({ mission }: MissionActionsProps) {
           );
         })}
       </div>
+      {error && <p className="mt-1 text-xs text-destructive">{error}</p>}
 
       <DialogPrimitive.Root
         open={dialogType === "complete"}

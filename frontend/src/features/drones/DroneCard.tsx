@@ -20,12 +20,47 @@ function isOverdue(iso: string | null): boolean {
   return new Date(iso).getTime() < Date.now();
 }
 
+function getMaintenanceProgress(drone: Drone): {
+  label: string;
+  percent: number;
+  urgent: boolean;
+} {
+  if (!drone.nextMaintenanceDueDate) {
+    return { label: "No maintenance scheduled", percent: 0, urgent: false };
+  }
+
+  const now = new Date();
+  const due = new Date(drone.nextMaintenanceDueDate);
+  const daysLeft = Math.ceil(
+    (due.getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
+  );
+
+  if (daysLeft <= 0) {
+    return {
+      label: `${Math.abs(daysLeft)}d overdue`,
+      percent: 100,
+      urgent: true,
+    };
+  }
+
+  // Progress based on 90-day cycle
+  const elapsed = 90 - daysLeft;
+  const percent = Math.min(Math.max((elapsed / 90) * 100, 0), 100);
+
+  return {
+    label: `${daysLeft}d until maintenance`,
+    percent,
+    urgent: daysLeft <= 7,
+  };
+}
+
 interface DroneCardProps {
   drone: Drone;
 }
 
 export function DroneCard({ drone }: DroneCardProps) {
   const navigate = useNavigate();
+  const maintenance = getMaintenanceProgress(drone);
 
   return (
     <Card
@@ -47,17 +82,31 @@ export function DroneCard({ drone }: DroneCardProps) {
 
         <div className="space-y-1.5">
           <div className="flex items-center justify-between text-xs">
-            <span className="text-muted-foreground">Flight Hours</span>
-            <span className="font-semibold tabular-nums">
-              {drone.totalFlightHours}h
+            <span className="text-muted-foreground">
+              {drone.totalFlightHours}h total flight
+            </span>
+            <span
+              className={cn(
+                "font-medium",
+                maintenance.urgent
+                  ? "text-destructive"
+                  : "text-muted-foreground",
+              )}
+            >
+              {maintenance.label}
             </span>
           </div>
           <div className="h-1.5 w-full rounded-full bg-muted">
             <div
-              className="h-full rounded-full bg-foreground/20 transition-all"
-              style={{
-                width: `${Math.min((drone.totalFlightHours / 500) * 100, 100)}%`,
-              }}
+              className={cn(
+                "h-full rounded-full transition-all",
+                maintenance.urgent
+                  ? "bg-destructive/60"
+                  : maintenance.percent > 60
+                    ? "bg-amber-400/60"
+                    : "bg-emerald-400/60",
+              )}
+              style={{ width: `${maintenance.percent}%` }}
             />
           </div>
         </div>

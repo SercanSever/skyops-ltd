@@ -1,8 +1,16 @@
+import { useDrones } from "@/hooks/use-drones";
+import { Input } from "@/components/ui/input";
 import type { MissionStatus } from "@/types/mission.types";
 
 interface MissionFiltersProps {
   status: MissionStatus | undefined;
+  droneId: string | undefined;
+  startDate: string | undefined;
+  endDate: string | undefined;
   onStatusChange: (status: MissionStatus | undefined) => void;
+  onDroneIdChange: (droneId: string | undefined) => void;
+  onStartDateChange: (date: string | undefined) => void;
+  onEndDateChange: (date: string | undefined) => void;
 }
 
 const STATUSES: { value: MissionStatus; label: string }[] = [
@@ -15,8 +23,16 @@ const STATUSES: { value: MissionStatus; label: string }[] = [
 
 export function MissionFilters({
   status,
+  droneId,
+  startDate,
+  endDate,
   onStatusChange,
+  onDroneIdChange,
+  onStartDateChange,
+  onEndDateChange,
 }: MissionFiltersProps) {
+  const { data: dronesData } = useDrones({ limit: 100 });
+
   return (
     <div className="flex flex-wrap items-center gap-3">
       <select
@@ -35,6 +51,35 @@ export function MissionFilters({
           </option>
         ))}
       </select>
+
+      <select
+        value={droneId ?? ""}
+        onChange={(e) => onDroneIdChange(e.target.value || undefined)}
+        className="h-9 rounded-md border bg-background px-3 text-sm text-foreground"
+      >
+        <option value="">All Drones</option>
+        {dronesData?.data.map((d) => (
+          <option key={d.id} value={d.id}>
+            {d.serialNumber}
+          </option>
+        ))}
+      </select>
+
+      <Input
+        type="date"
+        value={startDate ?? ""}
+        onChange={(e) => onStartDateChange(e.target.value || undefined)}
+        className="h-9 w-auto"
+        placeholder="Start date"
+      />
+
+      <Input
+        type="date"
+        value={endDate ?? ""}
+        onChange={(e) => onEndDateChange(e.target.value || undefined)}
+        className="h-9 w-auto"
+        placeholder="End date"
+      />
     </div>
   );
 }
