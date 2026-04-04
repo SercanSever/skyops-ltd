@@ -1,11 +1,11 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { MainLayout } from '@/components/layout/MainLayout';
-import { DashboardPage } from '@/pages/DashboardPage';
-import { DronesPage } from '@/pages/DronesPage';
-import { DroneDetailPage } from '@/pages/DroneDetailPage';
-import { MissionsPage } from '@/pages/MissionsPage';
-import { MaintenancePage } from '@/pages/MaintenancePage';
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { MainLayout } from "@/components/layout/MainLayout";
+import { DashboardPage } from "@/pages/DashboardPage";
+import { DronesPage } from "@/pages/DronesPage";
+import { DroneDetailPage } from "@/pages/DroneDetailPage";
+import { MissionsPage } from "@/pages/MissionsPage";
+import { MaintenancePage } from "@/pages/MaintenancePage";
 
 const queryClient = new QueryClient({
   defaultOptions: {

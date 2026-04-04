@@ -1,4 +1,9 @@
-export type MaintenanceType = 'ROUTINE_CHECK' | 'BATTERY_REPLACEMENT' | 'MOTOR_REPAIR' | 'FIRMWARE_UPDATE' | 'FULL_OVERHAUL';
+export type MaintenanceType =
+  | "ROUTINE_CHECK"
+  | "BATTERY_REPLACEMENT"
+  | "MOTOR_REPAIR"
+  | "FIRMWARE_UPDATE"
+  | "FULL_OVERHAUL";
 
 export interface MaintenanceLog {
   id: string;

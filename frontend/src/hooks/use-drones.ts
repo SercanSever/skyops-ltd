@@ -1,17 +1,28 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { fetchDrones, fetchDrone, createDrone, updateDrone, retireDrone, deleteDrone } from '@/api/drones';
-import type { CreateDroneRequest, UpdateDroneRequest, DroneFilterParams } from '@/types/drone.types';
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  fetchDrones,
+  fetchDrone,
+  createDrone,
+  updateDrone,
+  retireDrone,
+  deleteDrone,
+} from "@/api/drones";
+import type {
+  CreateDroneRequest,
+  UpdateDroneRequest,
+  DroneFilterParams,
+} from "@/types/drone.types";
 
 export function useDrones(params?: DroneFilterParams) {
   return useQuery({
-    queryKey: ['drones', params],
+    queryKey: ["drones", params],
     queryFn: () => fetchDrones(params),
   });
 }
 
 export function useDrone(id: string) {
   return useQuery({
-    queryKey: ['drones', id],
+    queryKey: ["drones", id],
     queryFn: () => fetchDrone(id),
     enabled: !!id,
   });
@@ -22,8 +33,8 @@ export function useCreateDrone() {
   return useMutation({
     mutationFn: (data: CreateDroneRequest) => createDrone(data),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['drones'] });
-      void queryClient.invalidateQueries({ queryKey: ['fleet-health'] });
+      void queryClient.invalidateQueries({ queryKey: ["drones"] });
+      void queryClient.invalidateQueries({ queryKey: ["fleet-health"] });
     },
   });
 }
@@ -31,9 +42,10 @@ export function useCreateDrone() {
 export function useUpdateDrone() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: UpdateDroneRequest }) => updateDrone(id, data),
+    mutationFn: ({ id, data }: { id: string; data: UpdateDroneRequest }) =>
+      updateDrone(id, data),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['drones'] });
+      void queryClient.invalidateQueries({ queryKey: ["drones"] });
     },
   });
 }
@@ -43,8 +55,8 @@ export function useRetireDrone() {
   return useMutation({
     mutationFn: (id: string) => retireDrone(id),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['drones'] });
-      void queryClient.invalidateQueries({ queryKey: ['fleet-health'] });
+      void queryClient.invalidateQueries({ queryKey: ["drones"] });
+      void queryClient.invalidateQueries({ queryKey: ["fleet-health"] });
     },
   });
 }
@@ -54,8 +66,8 @@ export function useDeleteDrone() {
   return useMutation({
     mutationFn: (id: string) => deleteDrone(id),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['drones'] });
-      void queryClient.invalidateQueries({ queryKey: ['fleet-health'] });
+      void queryClient.invalidateQueries({ queryKey: ["drones"] });
+      void queryClient.invalidateQueries({ queryKey: ["fleet-health"] });
     },
   });
 }

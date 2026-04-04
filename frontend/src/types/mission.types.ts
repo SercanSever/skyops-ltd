@@ -1,5 +1,13 @@
-export type MissionStatus = 'PLANNED' | 'PRE_FLIGHT_CHECK' | 'IN_PROGRESS' | 'COMPLETED' | 'ABORTED';
-export type MissionType = 'WIND_TURBINE_INSPECTION' | 'SOLAR_PANEL_SURVEY' | 'POWER_LINE_PATROL';
+export type MissionStatus =
+  | "PLANNED"
+  | "PRE_FLIGHT_CHECK"
+  | "IN_PROGRESS"
+  | "COMPLETED"
+  | "ABORTED";
+export type MissionType =
+  | "WIND_TURBINE_INSPECTION"
+  | "SOLAR_PANEL_SURVEY"
+  | "POWER_LINE_PATROL";
 
 export interface Mission {
   id: string;

@@ -1,4 +1,4 @@
-import { apiGet } from './client';
+import { apiGet } from "./client";
 
 export interface FleetHealthReport {
   totalDrones: number;
@@ -14,5 +14,5 @@ export interface FleetHealthReport {
 }
 
 export function fetchFleetHealth(): Promise<FleetHealthReport> {
-  return apiGet<FleetHealthReport>('/fleet-health');
+  return apiGet<FleetHealthReport>("/fleet-health");
 }
