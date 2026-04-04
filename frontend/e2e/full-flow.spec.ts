@@ -68,24 +68,27 @@ test.describe("Full Flow", () => {
     await expect(page.getByText("E2E Test Mission")).toBeVisible();
 
     // 6. Transition: PLANNED → PRE_FLIGHT_CHECK
-    await page
-      .getByRole("button", { name: "Start Pre-Flight" })
-      .first()
-      .click();
-    // After transition, "Start Mission" button should appear
+    // Find the row with our mission and click its Start Pre-Flight button
+    const missionRow = page
+      .locator("tr")
+      .filter({ hasText: "E2E Test Mission" });
+    await missionRow.getByRole("button", { name: "Start Pre-Flight" }).click();
+
+    // After transition, "Start Mission" button should appear in the same row
     await expect(
-      page.getByRole("button", { name: "Start Mission" }).first(),
+      missionRow.getByRole("button", { name: "Start Mission" }),
     ).toBeVisible();
 
     // 7. Transition: PRE_FLIGHT_CHECK → IN_PROGRESS
-    await page.getByRole("button", { name: "Start Mission" }).first().click();
+    await missionRow.getByRole("button", { name: "Start Mission" }).click();
+
     // After transition, "Complete" button should appear
     await expect(
-      page.getByRole("button", { name: "Complete" }).first(),
+      missionRow.getByRole("button", { name: "Complete" }),
     ).toBeVisible();
 
     // 8. Transition: IN_PROGRESS → COMPLETED
-    await page.getByRole("button", { name: "Complete" }).first().click();
+    await missionRow.getByRole("button", { name: "Complete" }).click();
     await expect(
       page.getByRole("heading", { name: "Complete Mission" }),
     ).toBeVisible();
@@ -95,8 +98,13 @@ test.describe("Full Flow", () => {
       .getByRole("button", { name: "Complete" })
       .click();
 
-    // Verify completed
-    await expect(page.getByText("Completed").first()).toBeVisible();
+    // After completing, no action buttons should remain for this mission
+    await expect(
+      missionRow.getByRole("button", { name: "Start Pre-Flight" }),
+    ).not.toBeVisible();
+    await expect(
+      missionRow.getByRole("button", { name: "Complete" }),
+    ).not.toBeVisible();
 
     // 9. Navigate back to Dashboard
     await page.getByRole("link", { name: "Dashboard" }).click();
