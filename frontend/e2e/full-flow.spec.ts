@@ -23,7 +23,7 @@ test.describe("Full Flow", () => {
     await page.getByPlaceholder("SKY-XXXX-XXXX").fill(serialNumber);
     await page.getByRole("button", { name: "Create" }).click();
 
-    // Wait for dialog to close and drone to appear in list
+    // Wait for dialog to close and drone to appear
     await expect(page.getByText("Create New Drone")).not.toBeVisible();
     await expect(page.getByText(serialNumber)).toBeVisible();
 
@@ -32,6 +32,9 @@ test.describe("Full Flow", () => {
     await expect(
       page.getByText("Schedule and manage drone missions"),
     ).toBeVisible();
+
+    // Switch to list view for reliable table-based interactions
+    await page.getByRole("button").filter({ has: page.locator("svg.lucide-list") }).click();
 
     // 5. Create a new mission
     await page.getByRole("button", { name: "New Mission" }).click();
@@ -68,7 +71,6 @@ test.describe("Full Flow", () => {
     await expect(page.getByText("E2E Test Mission")).toBeVisible();
 
     // 6. Transition: PLANNED → PRE_FLIGHT_CHECK
-    // Find the row with our mission and click its Start Pre-Flight button
     const missionRow = page
       .locator("tr")
       .filter({ hasText: "E2E Test Mission" });

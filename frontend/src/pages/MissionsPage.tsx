@@ -1,8 +1,11 @@
 import { useState } from "react";
 import { useMissions } from "@/hooks/use-missions";
 import { MissionTable } from "@/features/missions/MissionTable";
+import { MissionCard } from "@/features/missions/MissionCard";
 import { MissionFilters } from "@/features/missions/MissionFilters";
 import { CreateMissionDialog } from "@/features/missions/CreateMissionDialog";
+import { ViewToggle } from "@/components/ui/view-toggle";
+import { useViewPreference } from "@/hooks/use-view-preference";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { MissionStatus } from "@/types/mission.types";
@@ -10,7 +13,8 @@ import type { MissionStatus } from "@/types/mission.types";
 export function MissionsPage() {
   const [page, setPage] = useState(1);
   const [status, setStatus] = useState<MissionStatus | undefined>();
-  const limit = 10;
+  const [view, setView] = useViewPreference();
+  const limit = 12;
 
   const { data, isLoading } = useMissions({ page, limit, status });
 
@@ -28,20 +32,52 @@ export function MissionsPage() {
             Schedule and manage drone missions
           </p>
         </div>
-        <CreateMissionDialog />
+        <div className="flex items-center gap-2">
+          <ViewToggle view={view} onViewChange={setView} />
+          <CreateMissionDialog />
+        </div>
       </div>
 
       <MissionFilters status={status} onStatusChange={handleStatusChange} />
 
       {isLoading ? (
-        <div className="space-y-2">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="h-12 animate-pulse rounded-lg bg-muted" />
+        <div
+          className={
+            view === "grid"
+              ? "grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
+              : "space-y-2"
+          }
+        >
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div
+              key={i}
+              className={
+                view === "grid"
+                  ? "h-44 animate-pulse rounded-xl bg-muted"
+                  : "h-12 animate-pulse rounded-lg bg-muted"
+              }
+            />
           ))}
         </div>
       ) : data ? (
         <>
-          <MissionTable missions={data.data} />
+          {view === "grid" ? (
+            data.data.length === 0 ? (
+              <div className="rounded-lg border p-8 text-center">
+                <p className="text-sm text-muted-foreground">
+                  No missions found.
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {data.data.map((mission) => (
+                  <MissionCard key={mission.id} mission={mission} />
+                ))}
+              </div>
+            )
+          ) : (
+            <MissionTable missions={data.data} />
+          )}
 
           {data.meta.totalPages > 1 && (
             <div className="flex items-center justify-between">
