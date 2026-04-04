@@ -72,11 +72,17 @@ test.describe("Full Flow", () => {
       .getByRole("button", { name: "Start Pre-Flight" })
       .first()
       .click();
-    await expect(page.getByText("Pre-Flight").first()).toBeVisible();
+    // After transition, "Start Mission" button should appear
+    await expect(
+      page.getByRole("button", { name: "Start Mission" }).first(),
+    ).toBeVisible();
 
     // 7. Transition: PRE_FLIGHT_CHECK → IN_PROGRESS
     await page.getByRole("button", { name: "Start Mission" }).first().click();
-    await expect(page.getByText("In Progress").first()).toBeVisible();
+    // After transition, "Complete" button should appear
+    await expect(
+      page.getByRole("button", { name: "Complete" }).first(),
+    ).toBeVisible();
 
     // 8. Transition: IN_PROGRESS → COMPLETED
     await page.getByRole("button", { name: "Complete" }).first().click();
