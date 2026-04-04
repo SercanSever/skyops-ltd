@@ -41,7 +41,9 @@ test.describe("Full Flow", () => {
       .getByPlaceholder("Wind Farm Alpha Inspection")
       .fill("E2E Test Mission");
     await page.getByPlaceholder("John Doe").fill("E2E Pilot");
-    await page.getByPlaceholder("Wind Farm Alpha").fill("E2E Test Site");
+    await page
+      .getByPlaceholder("Wind Farm Alpha", { exact: true })
+      .fill("E2E Test Site");
 
     // Select the drone we just created
     const droneSelect = page
