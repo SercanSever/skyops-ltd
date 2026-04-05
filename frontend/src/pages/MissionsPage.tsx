@@ -30,6 +30,8 @@ export function MissionsPage() {
     droneId,
     startDate,
     endDate,
+    sortBy: "createdAt",
+    sortOrder: "DESC",
   });
 
   const droneIds = useMemo(

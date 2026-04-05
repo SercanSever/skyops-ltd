@@ -8,6 +8,8 @@ export interface FindAllMaintenanceLogsOptions {
   type?: MaintenanceType;
   startDate?: Date;
   endDate?: Date;
+  sortBy?: 'datePerformed' | 'createdAt';
+  sortOrder?: 'ASC' | 'DESC';
 }
 
 export interface IMaintenanceLogRepository {

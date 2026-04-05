@@ -47,7 +47,9 @@ export class MissionRepository implements IMissionRepository {
       });
     }
 
-    qb.orderBy('mission.plannedStartTime', 'DESC')
+    const sortBy = options?.sortBy ?? 'createdAt';
+    const sortOrder = options?.sortOrder ?? 'DESC';
+    qb.orderBy(`mission.${sortBy}`, sortOrder)
       .skip((page - 1) * limit)
       .take(limit);
 

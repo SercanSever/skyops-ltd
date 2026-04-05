@@ -52,7 +52,8 @@ export function MissionTable({ missions, droneMap }: MissionTableProps) {
             <TableHead>Type</TableHead>
             <TableHead>Pilot</TableHead>
             <TableHead>Status</TableHead>
-            <TableHead>Planned Start</TableHead>
+            <TableHead>Planned</TableHead>
+            <TableHead>Actual</TableHead>
             <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
@@ -73,8 +74,25 @@ export function MissionTable({ missions, droneMap }: MissionTableProps) {
               <TableCell>
                 <MissionStatusBadge status={mission.status} />
               </TableCell>
-              <TableCell className="tabular-nums">
-                {formatDateTime(mission.plannedStartTime)}
+              <TableCell className="tabular-nums text-xs">
+                <div>{formatDateTime(mission.plannedStartTime)}</div>
+                <div className="text-muted-foreground">
+                  {formatDateTime(mission.plannedEndTime)}
+                </div>
+              </TableCell>
+              <TableCell className="tabular-nums text-xs">
+                {mission.actualStartTime ? (
+                  <>
+                    <div>{formatDateTime(mission.actualStartTime)}</div>
+                    {mission.actualEndTime && (
+                      <div className="text-muted-foreground">
+                        {formatDateTime(mission.actualEndTime)}
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <span className="text-muted-foreground">—</span>
+                )}
               </TableCell>
               <TableCell className="text-right">
                 <MissionActions mission={mission} />

@@ -48,8 +48,13 @@ export function MaintenanceAlerts({
   dueSoonDrones,
 }: MaintenanceAlertsProps) {
   const [page, setPage] = useState(0);
+  const sortedOverdue = [...overdueDrones].sort(
+    (a, b) =>
+      new Date(a.nextMaintenanceDueDate).getTime() -
+      new Date(b.nextMaintenanceDueDate).getTime(),
+  );
   const allAlerts = [
-    ...overdueDrones.map((d) => ({ ...d, kind: "overdue" as const })),
+    ...sortedOverdue.map((d) => ({ ...d, kind: "overdue" as const })),
     ...dueSoonDrones.map((d) => ({ ...d, kind: "soon" as const })),
   ];
   const totalPages = Math.ceil(allAlerts.length / PAGE_SIZE);
