@@ -1,5 +1,7 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useMaintenanceLogs } from "@/hooks/use-maintenance";
+import { useDroneMap } from "@/hooks/use-drone-map";
 import { MaintenanceTable } from "@/features/maintenance/MaintenanceTable";
 import { MaintenanceCard } from "@/features/maintenance/MaintenanceCard";
 import { CreateMaintenanceDialog } from "@/features/maintenance/CreateMaintenanceDialog";
@@ -9,11 +11,19 @@ import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 export function MaintenancePage() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const newLogDroneId = searchParams.get("newLog") ?? undefined;
   const [page, setPage] = useState(1);
   const [view, setView] = useViewPreference();
   const limit = 12;
 
   const { data, isLoading } = useMaintenanceLogs({ page, limit });
+
+  const droneIds = useMemo(
+    () => data?.data.map((l) => l.droneId) ?? [],
+    [data],
+  );
+  const { data: droneMap } = useDroneMap(droneIds);
 
   return (
     <div className="space-y-4">
@@ -26,7 +36,14 @@ export function MaintenancePage() {
         </div>
         <div className="flex items-center gap-2">
           <ViewToggle view={view} onViewChange={setView} />
-          <CreateMaintenanceDialog />
+          <CreateMaintenanceDialog
+            defaultDroneId={newLogDroneId}
+            autoOpen={!!newLogDroneId}
+            onAutoOpenHandled={() => {
+              searchParams.delete("newLog");
+              setSearchParams(searchParams);
+            }}
+          />
         </div>
       </div>
 
@@ -61,12 +78,19 @@ export function MaintenancePage() {
             ) : (
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {data.data.map((log) => (
-                  <MaintenanceCard key={log.id} log={log} />
+                  <MaintenanceCard
+                    key={log.id}
+                    log={log}
+                    droneSerial={droneMap?.get(log.droneId)?.serialNumber}
+                    droneInMaintenance={
+                      droneMap?.get(log.droneId)?.status === "MAINTENANCE"
+                    }
+                  />
                 ))}
               </div>
             )
           ) : (
-            <MaintenanceTable logs={data.data} />
+            <MaintenanceTable logs={data.data} droneMap={droneMap} />
           )}
 
           {data.meta.totalPages > 1 && (

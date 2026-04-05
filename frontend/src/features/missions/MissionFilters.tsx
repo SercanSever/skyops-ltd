@@ -1,5 +1,6 @@
 import { useDrones } from "@/hooks/use-drones";
 import { Input } from "@/components/ui/input";
+import { X } from "lucide-react";
 import type { MissionStatus } from "@/types/mission.types";
 
 interface MissionFiltersProps {
@@ -32,6 +33,12 @@ export function MissionFilters({
   onEndDateChange,
 }: MissionFiltersProps) {
   const { data: dronesData } = useDrones({ limit: 100 });
+
+  const hasActiveFilters =
+    status !== undefined ||
+    droneId !== undefined ||
+    startDate !== undefined ||
+    endDate !== undefined;
 
   return (
     <div className="flex flex-wrap items-center gap-3">
@@ -80,6 +87,21 @@ export function MissionFilters({
         className="h-9 w-auto"
         placeholder="End date"
       />
+
+      {hasActiveFilters && (
+        <button
+          onClick={() => {
+            onStatusChange(undefined);
+            onDroneIdChange(undefined);
+            onStartDateChange(undefined);
+            onEndDateChange(undefined);
+          }}
+          className="flex h-9 items-center gap-1 rounded-md border border-dashed px-3 text-xs text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+        >
+          <X className="h-3 w-3" />
+          Reset
+        </button>
+      )}
     </div>
   );
 }

@@ -15,9 +15,19 @@ const MAINTENANCE_TYPES: { value: MaintenanceType; label: string }[] = [
   { value: "FULL_OVERHAUL", label: "Full Overhaul" },
 ];
 
-export function CreateMaintenanceDialog() {
-  const [open, setOpen] = useState(false);
-  const [droneId, setDroneId] = useState("");
+interface CreateMaintenanceDialogProps {
+  defaultDroneId?: string;
+  autoOpen?: boolean;
+  onAutoOpenHandled?: () => void;
+}
+
+export function CreateMaintenanceDialog({
+  defaultDroneId,
+  autoOpen,
+  onAutoOpenHandled,
+}: CreateMaintenanceDialogProps = {}) {
+  const [open, setOpen] = useState(autoOpen ?? false);
+  const [droneId, setDroneId] = useState(defaultDroneId ?? "");
   const [type, setType] = useState<MaintenanceType>("ROUTINE_CHECK");
   const [technicianName, setTechnicianName] = useState("");
   const [notes, setNotes] = useState("");
@@ -88,7 +98,13 @@ export function CreateMaintenanceDialog() {
         New Maintenance Log
       </Button>
 
-      <DialogPrimitive.Root open={open} onOpenChange={setOpen}>
+      <DialogPrimitive.Root
+        open={open}
+        onOpenChange={(o) => {
+          setOpen(o);
+          if (!o) onAutoOpenHandled?.();
+        }}
+      >
         <DialogPrimitive.Portal>
           <DialogPrimitive.Backdrop className="fixed inset-0 z-50 bg-black/50" />
           <DialogPrimitive.Popup className="fixed top-1/2 left-1/2 z-50 w-full max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-xl border bg-card p-6 shadow-lg max-h-[90vh] overflow-y-auto">

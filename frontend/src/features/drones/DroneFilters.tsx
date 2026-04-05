@@ -1,3 +1,4 @@
+import { X } from "lucide-react";
 import type { DroneStatus, DroneModel } from "@/types/drone.types";
 
 interface DroneFiltersProps {
@@ -26,6 +27,8 @@ export function DroneFilters({
   onStatusChange,
   onModelChange,
 }: DroneFiltersProps) {
+  const hasActiveFilters = status !== undefined || model !== undefined;
+
   return (
     <div className="flex flex-wrap items-center gap-3">
       <select
@@ -59,6 +62,19 @@ export function DroneFilters({
           </option>
         ))}
       </select>
+
+      {hasActiveFilters && (
+        <button
+          onClick={() => {
+            onStatusChange(undefined);
+            onModelChange(undefined);
+          }}
+          className="flex h-9 items-center gap-1 rounded-md border border-dashed px-3 text-xs text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+        >
+          <X className="h-3 w-3" />
+          Reset
+        </button>
+      )}
     </div>
   );
 }

@@ -15,6 +15,7 @@ export interface IDroneRepository {
   findAll(
     options?: FindAllDronesOptions,
   ): Promise<{ data: Drone[]; total: number }>;
+  findByIds(ids: string[]): Promise<Drone[]>;
   save(drone: Drone): Promise<Drone>;
   delete(id: string): Promise<void>;
   hasScheduledMissions(droneId: string): Promise<boolean>;

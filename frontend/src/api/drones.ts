@@ -20,6 +20,11 @@ export function fetchDrone(id: string): Promise<Drone> {
   return apiGet<Drone>(`/drones/${id}`);
 }
 
+export function fetchDronesByIds(ids: string[]): Promise<Drone[]> {
+  if (ids.length === 0) return Promise.resolve([]);
+  return apiGet<Drone[]>("/drones/batch", { ids: ids.join(",") });
+}
+
 export function createDrone(data: CreateDroneRequest): Promise<Drone> {
   return apiPost<Drone>("/drones", data);
 }

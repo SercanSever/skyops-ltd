@@ -13,11 +13,21 @@ const MISSION_TYPES: { value: MissionType; label: string }[] = [
   { value: "POWER_LINE_PATROL", label: "Power Line Patrol" },
 ];
 
-export function CreateMissionDialog() {
-  const [open, setOpen] = useState(false);
+interface CreateMissionDialogProps {
+  defaultDroneId?: string;
+  autoOpen?: boolean;
+  onAutoOpenHandled?: () => void;
+}
+
+export function CreateMissionDialog({
+  defaultDroneId,
+  autoOpen,
+  onAutoOpenHandled,
+}: CreateMissionDialogProps = {}) {
+  const [open, setOpen] = useState(autoOpen ?? false);
   const [name, setName] = useState("");
   const [type, setType] = useState<MissionType>("WIND_TURBINE_INSPECTION");
-  const [droneId, setDroneId] = useState("");
+  const [droneId, setDroneId] = useState(defaultDroneId ?? "");
   const [pilotName, setPilotName] = useState("");
   const [siteLocation, setSiteLocation] = useState("");
   const [plannedStartTime, setPlannedStartTime] = useState("");
@@ -98,7 +108,13 @@ export function CreateMissionDialog() {
         New Mission
       </Button>
 
-      <DialogPrimitive.Root open={open} onOpenChange={setOpen}>
+      <DialogPrimitive.Root
+        open={open}
+        onOpenChange={(o) => {
+          setOpen(o);
+          if (!o) onAutoOpenHandled?.();
+        }}
+      >
         <DialogPrimitive.Portal>
           <DialogPrimitive.Backdrop className="fixed inset-0 z-50 bg-black/50" />
           <DialogPrimitive.Popup className="fixed top-1/2 left-1/2 z-50 w-full max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-xl border bg-card p-6 shadow-lg max-h-[90vh] overflow-y-auto">

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { useDrones } from "@/hooks/use-drones";
 import { DroneTable } from "@/features/drones/DroneTable";
 import { DroneCard } from "@/features/drones/DroneCard";
@@ -13,6 +13,7 @@ import type { DroneStatus, DroneModel } from "@/types/drone.types";
 
 export function DronesPage() {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [page, setPage] = useState(1);
   const [status, setStatus] = useState<DroneStatus | undefined>(
     (searchParams.get("status") as DroneStatus) || undefined,
@@ -31,6 +32,14 @@ export function DronesPage() {
   function handleModelChange(m: DroneModel | undefined) {
     setModel(m);
     setPage(1);
+  }
+
+  function handlePlanMission(droneId: string) {
+    navigate(`/missions?newMission=${droneId}`);
+  }
+
+  function handleSendToMaintenance(droneId: string) {
+    navigate(`/maintenance?newLog=${droneId}`);
   }
 
   return (
@@ -86,12 +95,21 @@ export function DronesPage() {
             ) : (
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {data.data.map((drone) => (
-                  <DroneCard key={drone.id} drone={drone} />
+                  <DroneCard
+                    key={drone.id}
+                    drone={drone}
+                    onPlanMission={handlePlanMission}
+                    onSendToMaintenance={handleSendToMaintenance}
+                  />
                 ))}
               </div>
             )
           ) : (
-            <DroneTable drones={data.data} />
+            <DroneTable
+              drones={data.data}
+              onPlanMission={handlePlanMission}
+              onSendToMaintenance={handleSendToMaintenance}
+            />
           )}
 
           {data.meta.totalPages > 1 && (

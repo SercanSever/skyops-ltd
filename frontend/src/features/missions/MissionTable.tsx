@@ -8,10 +8,13 @@ import {
 } from "@/components/ui/table";
 import { MissionStatusBadge } from "./MissionStatusBadge";
 import { MissionActions } from "./MissionActions";
+import { DroneLink } from "@/features/drones/DroneLink";
 import type { Mission } from "@/types/mission.types";
+import type { Drone } from "@/types/drone.types";
 
 interface MissionTableProps {
   missions: Mission[];
+  droneMap?: Map<string, Drone>;
 }
 
 function formatDateTime(iso: string): string {
@@ -30,7 +33,7 @@ function formatType(type: string): string {
     .join(" ");
 }
 
-export function MissionTable({ missions }: MissionTableProps) {
+export function MissionTable({ missions, droneMap }: MissionTableProps) {
   if (missions.length === 0) {
     return (
       <div className="rounded-lg border p-8 text-center">
@@ -45,6 +48,7 @@ export function MissionTable({ missions }: MissionTableProps) {
         <TableHeader>
           <TableRow>
             <TableHead>Name</TableHead>
+            <TableHead>Drone</TableHead>
             <TableHead>Type</TableHead>
             <TableHead>Pilot</TableHead>
             <TableHead>Status</TableHead>
@@ -56,6 +60,12 @@ export function MissionTable({ missions }: MissionTableProps) {
           {missions.map((mission) => (
             <TableRow key={mission.id}>
               <TableCell className="font-medium">{mission.name}</TableCell>
+              <TableCell>
+                <DroneLink
+                  droneId={mission.droneId}
+                  serialNumber={droneMap?.get(mission.droneId)?.serialNumber}
+                />
+              </TableCell>
               <TableCell className="text-muted-foreground">
                 {formatType(mission.type)}
               </TableCell>

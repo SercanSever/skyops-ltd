@@ -1,5 +1,12 @@
-import { Target } from "lucide-react";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { useState } from "react";
+import { Target, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  CardAction,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useMissions } from "@/hooks/use-missions";
 import type { Mission } from "@/types/mission.types";
@@ -25,10 +32,11 @@ function statusBadge(status: Mission["status"]) {
 }
 
 export function UpcomingMissions() {
-  const { data, isLoading } = useMissions({
-    limit: 8,
-    status: "PLANNED",
-  });
+  const [page, setPage] = useState(1);
+  const limit = 5;
+  const { data, isLoading } = useMissions({ page, limit, status: "PLANNED" });
+
+  const totalPages = data?.meta.totalPages ?? 1;
 
   return (
     <Card>
@@ -37,6 +45,26 @@ export function UpcomingMissions() {
           <Target className="h-4 w-4" />
           Upcoming Missions
         </CardTitle>
+        {totalPages > 1 && (
+          <CardAction>
+            <div className="flex items-center gap-1">
+              <button
+                disabled={page <= 1}
+                onClick={() => setPage((p) => p - 1)}
+                className="rounded p-1 text-muted-foreground hover:bg-muted disabled:opacity-30"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+              <button
+                disabled={page >= totalPages}
+                onClick={() => setPage((p) => p + 1)}
+                className="rounded p-1 text-muted-foreground hover:bg-muted disabled:opacity-30"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </div>
+          </CardAction>
+        )}
       </CardHeader>
       <CardContent>
         {isLoading ? (

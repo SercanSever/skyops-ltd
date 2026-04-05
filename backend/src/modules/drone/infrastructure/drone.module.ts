@@ -9,6 +9,7 @@ import { ListDronesUseCase } from '../application/use-cases/list-drones.use-case
 import { UpdateDroneUseCase } from '../application/use-cases/update-drone.use-case';
 import { RetireDroneUseCase } from '../application/use-cases/retire-drone.use-case';
 import { DeleteDroneUseCase } from '../application/use-cases/delete-drone.use-case';
+import { GetDronesByIdsUseCase } from '../application/use-cases/get-drones-by-ids.use-case';
 import { DroneController } from '../presentation/drone.controller';
 
 @Module({
@@ -22,6 +23,7 @@ import { DroneController } from '../presentation/drone.controller';
     UpdateDroneUseCase,
     RetireDroneUseCase,
     DeleteDroneUseCase,
+    GetDronesByIdsUseCase,
   ],
   exports: [
     DRONE_REPOSITORY,
@@ -31,6 +33,7 @@ import { DroneController } from '../presentation/drone.controller';
     UpdateDroneUseCase,
     RetireDroneUseCase,
     DeleteDroneUseCase,
+    GetDronesByIdsUseCase,
   ],
 })
 export class DroneModule {}

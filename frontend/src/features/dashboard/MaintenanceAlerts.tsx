@@ -1,5 +1,12 @@
-import { AlertTriangle } from "lucide-react";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { useState } from "react";
+import { AlertTriangle, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  CardAction,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import type { FleetHealthReport } from "@/api/fleet-health";
 import { Wrench } from "lucide-react";
@@ -34,13 +41,21 @@ function daysUntil(iso: string): number {
   return Math.ceil((due.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
 }
 
+const PAGE_SIZE = 5;
+
 export function MaintenanceAlerts({
   overdueDrones,
   dueSoonDrones,
 }: MaintenanceAlertsProps) {
-  const totalAlerts = overdueDrones.length + dueSoonDrones.length;
+  const [page, setPage] = useState(0);
+  const allAlerts = [
+    ...overdueDrones.map((d) => ({ ...d, kind: "overdue" as const })),
+    ...dueSoonDrones.map((d) => ({ ...d, kind: "soon" as const })),
+  ];
+  const totalPages = Math.ceil(allAlerts.length / PAGE_SIZE);
+  const paged = allAlerts.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
 
-  if (totalAlerts === 0) {
+  if (allAlerts.length === 0) {
     return (
       <Card>
         <CardHeader>
@@ -80,11 +95,31 @@ export function MaintenanceAlerts({
             )}
           </div>
         </CardTitle>
+        {totalPages > 1 && (
+          <CardAction>
+            <div className="flex items-center gap-1">
+              <button
+                disabled={page <= 0}
+                onClick={() => setPage((p) => p - 1)}
+                className="rounded p-1 text-muted-foreground hover:bg-muted disabled:opacity-30"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+              <button
+                disabled={page >= totalPages - 1}
+                onClick={() => setPage((p) => p + 1)}
+                className="rounded p-1 text-muted-foreground hover:bg-muted disabled:opacity-30"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </div>
+          </CardAction>
+        )}
       </CardHeader>
-      <CardContent className="space-y-4">
-        {overdueDrones.length > 0 && (
-          <div className="space-y-2">
-            {overdueDrones.map((drone) => {
+      <CardContent>
+        <div className="space-y-2">
+          {paged.map((drone) => {
+            if (drone.kind === "overdue") {
               const days = daysOverdue(drone.nextMaintenanceDueDate);
               return (
                 <div
@@ -107,38 +142,31 @@ export function MaintenanceAlerts({
                   </div>
                 </div>
               );
-            })}
-          </div>
-        )}
-
-        {dueSoonDrones.length > 0 && (
-          <div className="space-y-2">
-            {dueSoonDrones.map((drone) => {
-              const days = daysUntil(drone.nextMaintenanceDueDate);
-              return (
-                <div
-                  key={drone.id}
-                  className="flex items-center justify-between rounded-lg border border-amber-200 bg-amber-50/50 px-3 py-2.5"
-                >
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium">{drone.serialNumber}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {drone.model.replace(/_/g, " ")}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm font-medium text-amber-700">
-                      {days}d remaining
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      Due {formatDate(drone.nextMaintenanceDueDate)}
-                    </p>
-                  </div>
+            }
+            const days = daysUntil(drone.nextMaintenanceDueDate);
+            return (
+              <div
+                key={drone.id}
+                className="flex items-center justify-between rounded-lg border border-amber-200 bg-amber-50/50 px-3 py-2.5"
+              >
+                <div className="min-w-0">
+                  <p className="text-sm font-medium">{drone.serialNumber}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {drone.model.replace(/_/g, " ")}
+                  </p>
                 </div>
-              );
-            })}
-          </div>
-        )}
+                <div className="text-right">
+                  <p className="text-sm font-medium text-amber-700">
+                    {days}d remaining
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Due {formatDate(drone.nextMaintenanceDueDate)}
+                  </p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </CardContent>
     </Card>
   );

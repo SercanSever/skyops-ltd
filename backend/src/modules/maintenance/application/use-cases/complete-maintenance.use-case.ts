@@ -32,6 +32,8 @@ export class CompleteMaintenanceUseCase {
       );
     }
 
+    drone.updateLastMaintenanceDate(new Date());
+    drone.calculateNextMaintenanceDate();
     drone.setAvailable();
     await this.droneRepository.save(drone);
 
