@@ -8,6 +8,8 @@ export interface FindAllMissionsOptions {
   droneId?: string;
   startDate?: Date;
   endDate?: Date;
+  sortBy?: 'plannedStartTime' | 'createdAt';
+  sortOrder?: 'ASC' | 'DESC';
 }
 
 export interface IMissionRepository {

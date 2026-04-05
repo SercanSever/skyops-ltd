@@ -49,6 +49,8 @@ export class MaintenanceController {
       type: query.type,
       startDate: query.startDate ? new Date(query.startDate) : undefined,
       endDate: query.endDate ? new Date(query.endDate) : undefined,
+      sortBy: query.sortBy,
+      sortOrder: query.sortOrder,
     });
 
     return {

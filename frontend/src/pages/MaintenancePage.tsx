@@ -17,7 +17,12 @@ export function MaintenancePage() {
   const [view, setView] = useViewPreference();
   const limit = 12;
 
-  const { data, isLoading } = useMaintenanceLogs({ page, limit });
+  const { data, isLoading } = useMaintenanceLogs({
+    page,
+    limit,
+    sortBy: "createdAt",
+    sortOrder: "DESC",
+  });
 
   const droneIds = useMemo(
     () => data?.data.map((l) => l.droneId) ?? [],

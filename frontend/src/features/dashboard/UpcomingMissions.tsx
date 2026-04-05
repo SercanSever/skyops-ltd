@@ -34,7 +34,13 @@ function statusBadge(status: Mission["status"]) {
 export function UpcomingMissions() {
   const [page, setPage] = useState(1);
   const limit = 5;
-  const { data, isLoading } = useMissions({ page, limit, status: "PLANNED" });
+  const { data, isLoading } = useMissions({
+    page,
+    limit,
+    status: "PLANNED",
+    sortBy: "plannedStartTime",
+    sortOrder: "ASC",
+  });
 
   const totalPages = data?.meta.totalPages ?? 1;
 

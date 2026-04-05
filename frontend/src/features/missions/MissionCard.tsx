@@ -57,9 +57,20 @@ export function MissionCard({ mission, droneSerial }: MissionCardProps) {
           <div className="flex items-center gap-1.5">
             <Calendar className="h-3 w-3 shrink-0" />
             <span className="tabular-nums">
-              {formatDateTime(mission.plannedStartTime)}
+              {formatDateTime(mission.plannedStartTime)} &ndash;{" "}
+              {formatDateTime(mission.plannedEndTime)}
             </span>
           </div>
+          {mission.actualStartTime && (
+            <div className="flex items-center gap-1.5 text-foreground">
+              <Calendar className="h-3 w-3 shrink-0" />
+              <span className="tabular-nums">
+                {formatDateTime(mission.actualStartTime)}
+                {mission.actualEndTime &&
+                  ` – ${formatDateTime(mission.actualEndTime)}`}
+              </span>
+            </div>
+          )}
         </div>
 
         {mission.flightHours != null && (

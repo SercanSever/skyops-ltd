@@ -50,4 +50,6 @@ export interface MissionFilterParams {
   droneId?: string;
   startDate?: string;
   endDate?: string;
+  sortBy?: "plannedStartTime" | "createdAt";
+  sortOrder?: "ASC" | "DESC";
 }

@@ -33,4 +33,6 @@ export interface MaintenanceFilterParams {
   type?: MaintenanceType;
   startDate?: string;
   endDate?: string;
+  sortBy?: "datePerformed" | "createdAt";
+  sortOrder?: "ASC" | "DESC";
 }
