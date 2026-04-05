@@ -29,17 +29,6 @@ export class TransitionMissionUseCase {
 
     const previousStatus = mission.status;
 
-    if (
-      input.status === MissionStatus.ABORTED &&
-      (!input.abortReason || input.abortReason.trim().length === 0)
-    ) {
-      throw new BusinessRuleViolationException(
-        'Abort reason is required when aborting a mission',
-        422,
-        { field: 'abortReason' },
-      );
-    }
-
     try {
       mission.transitionTo(input.status, {
         flightHours: input.flightHours,
