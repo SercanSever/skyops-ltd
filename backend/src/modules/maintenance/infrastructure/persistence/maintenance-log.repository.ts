@@ -46,7 +46,7 @@ export class MaintenanceLogRepository implements IMaintenanceLogRepository {
       });
     }
 
-    qb.orderBy('log.createdAt', 'DESC')
+    qb.orderBy('log.datePerformed', 'DESC')
       .skip((page - 1) * limit)
       .take(limit);
 

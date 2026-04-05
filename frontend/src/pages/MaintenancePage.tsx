@@ -82,6 +82,9 @@ export function MaintenancePage() {
                     key={log.id}
                     log={log}
                     droneSerial={droneMap?.get(log.droneId)?.serialNumber}
+                    droneInMaintenance={
+                      droneMap?.get(log.droneId)?.status === "MAINTENANCE"
+                    }
                   />
                 ))}
               </div>

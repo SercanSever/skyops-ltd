@@ -47,7 +47,7 @@ export class MissionRepository implements IMissionRepository {
       });
     }
 
-    qb.orderBy('mission.createdAt', 'DESC')
+    qb.orderBy('mission.plannedStartTime', 'DESC')
       .skip((page - 1) * limit)
       .take(limit);
 

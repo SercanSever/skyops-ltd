@@ -60,7 +60,6 @@ export class CreateMaintenanceLogUseCase {
 
     drone.setMaintenance();
     drone.updateLastMaintenanceDate(input.datePerformed);
-    drone.calculateNextMaintenanceDate();
     await this.droneRepository.save(drone);
 
     return this.maintenanceLogRepository.save(maintenanceLog);
