@@ -129,6 +129,7 @@ docker compose up -d pgadmin    # http://localhost:5050
 | ------ | --- | ----------- |
 | POST | `/api/drones` | Create a new drone |
 | GET | `/api/drones` | List drones (paginated, filterable by status/model) |
+| GET | `/api/drones/batch?ids=id1,id2` | Get multiple drones by IDs |
 | GET | `/api/drones/:id` | Get drone details |
 | PATCH | `/api/drones/:id` | Update drone |
 | DELETE | `/api/drones/:id` | Delete drone |
@@ -139,7 +140,7 @@ docker compose up -d pgadmin    # http://localhost:5050
 | Method | URL | Description |
 | -------- | ----- | ------------- |
 | POST | `/api/missions` | Create a mission |
-| GET | `/api/missions` | List missions (paginated, filterable by status/droneId/date) |
+| GET | `/api/missions` | List missions (paginated, filterable by status/droneId/date, sortBy/sortOrder) |
 | GET | `/api/missions/:id` | Get mission details |
 | PATCH | `/api/missions/:id/transition` | Transition mission state |
 
@@ -148,7 +149,7 @@ docker compose up -d pgadmin    # http://localhost:5050
 | Method | URL | Description |
 | ------ | --- | ----------- |
 | POST | `/api/maintenance-logs` | Create maintenance log |
-| GET | `/api/maintenance-logs` | List logs (paginated, filterable) |
+| GET | `/api/maintenance-logs` | List logs (paginated, filterable, sortBy/sortOrder) |
 | GET | `/api/maintenance-logs/:id` | Get log details |
 | PATCH | `/api/maintenance-logs/:id/complete` | Complete maintenance |
 
@@ -167,7 +168,7 @@ docker compose up -d pgadmin    # http://localhost:5050
 ```bash
 cd backend
 
-# Unit tests (94 tests)
+# Unit tests (95 tests)
 npm run test
 
 # Integration tests (real database)
