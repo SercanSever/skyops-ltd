@@ -2,8 +2,9 @@ import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { DroneStatusBadge } from "./DroneStatusBadge";
 import { formatModel } from "./format-model";
+import { Button } from "@/components/ui/button";
 import type { Drone } from "@/types/drone.types";
-import { Clock, Wrench } from "lucide-react";
+import { Clock, Wrench, Target } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 function formatDate(iso: string | null): string {
@@ -56,9 +57,15 @@ function getMaintenanceProgress(drone: Drone): {
 
 interface DroneCardProps {
   drone: Drone;
+  onPlanMission?: (droneId: string) => void;
+  onSendToMaintenance?: (droneId: string) => void;
 }
 
-export function DroneCard({ drone }: DroneCardProps) {
+export function DroneCard({
+  drone,
+  onPlanMission,
+  onSendToMaintenance,
+}: DroneCardProps) {
   const navigate = useNavigate();
   const maintenance = getMaintenanceProgress(drone);
 
@@ -128,6 +135,37 @@ export function DroneCard({ drone }: DroneCardProps) {
             <span>{formatDate(drone.createdAt)}</span>
           </div>
         </div>
+
+        {drone.status === "AVAILABLE" &&
+          (onPlanMission || onSendToMaintenance) && (
+            <div
+              className="flex items-center gap-2 border-t pt-2.5"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {onPlanMission && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-1"
+                  onClick={() => onPlanMission(drone.id)}
+                >
+                  <Target className="mr-1 h-3.5 w-3.5" />
+                  Plan Mission
+                </Button>
+              )}
+              {onSendToMaintenance && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-1"
+                  onClick={() => onSendToMaintenance(drone.id)}
+                >
+                  <Wrench className="mr-1 h-3.5 w-3.5" />
+                  Maintain
+                </Button>
+              )}
+            </div>
+          )}
       </CardContent>
     </Card>
   );

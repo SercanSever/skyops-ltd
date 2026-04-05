@@ -57,6 +57,15 @@ export class DroneRepository implements IDroneRepository {
     };
   }
 
+  async findByIds(ids: string[]): Promise<Drone[]> {
+    if (ids.length === 0) return [];
+    const entities = await this.repository
+      .createQueryBuilder('drone')
+      .where('drone.id IN (:...ids)', { ids })
+      .getMany();
+    return entities.map((entity) => DroneMapper.toDomain(entity));
+  }
+
   async save(drone: Drone): Promise<Drone> {
     const orm = DroneMapper.toOrm(drone);
     const saved = await this.repository.save(orm);

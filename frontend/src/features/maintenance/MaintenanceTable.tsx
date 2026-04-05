@@ -9,11 +9,14 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useCompleteMaintenance } from "@/hooks/use-maintenance";
+import { DroneLink } from "@/features/drones/DroneLink";
 import type { MaintenanceLog } from "@/types/maintenance.types";
+import type { Drone } from "@/types/drone.types";
 import { CheckCircle } from "lucide-react";
 
 interface MaintenanceTableProps {
   logs: MaintenanceLog[];
+  droneMap?: Map<string, Drone>;
 }
 
 function formatDate(iso: string): string {
@@ -31,7 +34,7 @@ function formatType(type: string): string {
     .join(" ");
 }
 
-export function MaintenanceTable({ logs }: MaintenanceTableProps) {
+export function MaintenanceTable({ logs, droneMap }: MaintenanceTableProps) {
   const completeMaintenance = useCompleteMaintenance();
 
   if (logs.length === 0) {
@@ -49,6 +52,7 @@ export function MaintenanceTable({ logs }: MaintenanceTableProps) {
       <Table>
         <TableHeader>
           <TableRow>
+            <TableHead>Drone</TableHead>
             <TableHead>Type</TableHead>
             <TableHead>Technician</TableHead>
             <TableHead>Date Performed</TableHead>
@@ -60,6 +64,12 @@ export function MaintenanceTable({ logs }: MaintenanceTableProps) {
         <TableBody>
           {logs.map((log) => (
             <TableRow key={log.id}>
+              <TableCell>
+                <DroneLink
+                  droneId={log.droneId}
+                  serialNumber={droneMap?.get(log.droneId)?.serialNumber}
+                />
+              </TableCell>
               <TableCell>
                 <Badge variant="outline">{formatType(log.type)}</Badge>
               </TableCell>

@@ -1,10 +1,22 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Dialog as DialogPrimitive } from "@base-ui/react/dialog";
 import { useTransitionMission } from "@/hooks/use-missions";
 import type { Mission, MissionStatus } from "@/types/mission.types";
 import { PlayCircle, CheckCircle, XCircle, ClipboardCheck } from "lucide-react";
+
+const TRANSITION_LABELS: Record<string, { title: string; desc: string }> = {
+  PRE_FLIGHT_CHECK: {
+    title: "Start Pre-Flight Check",
+    desc: "This will move the mission to pre-flight check status.",
+  },
+  IN_PROGRESS: {
+    title: "Start Mission",
+    desc: "This will start the mission and mark the assigned drone as in use.",
+  },
+};
 
 function getAvailableTransitions(
   status: MissionStatus,
@@ -41,7 +53,10 @@ interface MissionActionsProps {
 export function MissionActions({ mission }: MissionActionsProps) {
   const transitions = getAvailableTransitions(mission.status);
   const transitionMission = useTransitionMission();
-  const [dialogType, setDialogType] = useState<"complete" | "abort" | null>(
+  const [dialogType, setDialogType] = useState<
+    "complete" | "abort" | "confirm" | null
+  >(null);
+  const [pendingTarget, setPendingTarget] = useState<MissionStatus | null>(
     null,
   );
   const [flightHours, setFlightHours] = useState("");
@@ -50,7 +65,7 @@ export function MissionActions({ mission }: MissionActionsProps) {
 
   if (transitions.length === 0) return null;
 
-  async function handleSimpleTransition(target: MissionStatus) {
+  function handleTransitionClick(target: MissionStatus) {
     if (target === "COMPLETED") {
       setDialogType("complete");
       return;
@@ -59,14 +74,24 @@ export function MissionActions({ mission }: MissionActionsProps) {
       setDialogType("abort");
       return;
     }
+    setPendingTarget(target);
+    setDialogType("confirm");
+  }
+
+  async function handleConfirmTransition() {
+    if (!pendingTarget) return;
     setError("");
     try {
       await transitionMission.mutateAsync({
         id: mission.id,
-        data: { status: target },
+        data: { status: pendingTarget },
       });
+      setDialogType(null);
+      setPendingTarget(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Transition failed");
+      setDialogType(null);
+      setPendingTarget(null);
     }
   }
 
@@ -92,13 +117,15 @@ export function MissionActions({ mission }: MissionActionsProps) {
 
   async function handleAbort(e: React.FormEvent) {
     e.preventDefault();
+    setError("");
+    if (!abortReason.trim()) {
+      setError("Abort reason is required");
+      return;
+    }
     try {
       await transitionMission.mutateAsync({
         id: mission.id,
-        data: {
-          status: "ABORTED",
-          abortReason: abortReason || undefined,
-        },
+        data: { status: "ABORTED", abortReason },
       });
       setDialogType(null);
       setAbortReason("");
@@ -106,6 +133,10 @@ export function MissionActions({ mission }: MissionActionsProps) {
       setError(err instanceof Error ? err.message : "Failed");
     }
   }
+
+  const confirmInfo = pendingTarget
+    ? TRANSITION_LABELS[pendingTarget]
+    : undefined;
 
   return (
     <>
@@ -118,7 +149,7 @@ export function MissionActions({ mission }: MissionActionsProps) {
               variant={t.target === "ABORTED" ? "ghost" : "outline"}
               size="sm"
               disabled={transitionMission.isPending}
-              onClick={() => void handleSimpleTransition(t.target)}
+              onClick={() => handleTransitionClick(t.target)}
               className={
                 t.target === "ABORTED"
                   ? "text-destructive hover:bg-destructive/10"
@@ -132,6 +163,21 @@ export function MissionActions({ mission }: MissionActionsProps) {
         })}
       </div>
       {error && <p className="mt-1 text-xs text-destructive">{error}</p>}
+
+      <ConfirmDialog
+        open={dialogType === "confirm" && !!confirmInfo}
+        onOpenChange={(open) => {
+          if (!open) {
+            setDialogType(null);
+            setPendingTarget(null);
+          }
+        }}
+        title={confirmInfo?.title ?? ""}
+        description={confirmInfo?.desc ?? ""}
+        confirmLabel="Proceed"
+        onConfirm={() => void handleConfirmTransition()}
+        isPending={transitionMission.isPending}
+      />
 
       <DialogPrimitive.Root
         open={dialogType === "complete"}
@@ -195,7 +241,7 @@ export function MissionActions({ mission }: MissionActionsProps) {
               className="mt-4 space-y-4"
             >
               <div className="space-y-2">
-                <label className="text-sm font-medium">Reason (optional)</label>
+                <label className="text-sm font-medium">Reason</label>
                 <Input
                   placeholder="e.g. Weather conditions"
                   value={abortReason}

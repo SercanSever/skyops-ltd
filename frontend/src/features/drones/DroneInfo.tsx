@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { DroneStatusBadge } from "./DroneStatusBadge";
 import { formatModel } from "./format-model";
 import { useRetireDrone } from "@/hooks/use-drones";
@@ -24,70 +25,88 @@ function formatDate(iso: string | null): string {
 export function DroneInfo({ drone }: DroneInfoProps) {
   const retireDrone = useRetireDrone();
   const [retireError, setRetireError] = useState("");
+  const [showRetireConfirm, setShowRetireConfirm] = useState(false);
 
   async function handleRetire() {
-    if (!confirm("Are you sure you want to retire this drone?")) return;
     setRetireError("");
     try {
       await retireDrone.mutateAsync(drone.id);
+      setShowRetireConfirm(false);
     } catch (err) {
       setRetireError(
         err instanceof Error ? err.message : "Failed to retire drone",
       );
+      setShowRetireConfirm(false);
     }
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Plane className="h-5 w-5" />
-            {drone.serialNumber}
-          </div>
-          <DroneStatusBadge status={drone.status} />
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-          <InfoItem label="Model" value={formatModel(drone.model)} />
-          <InfoItem
-            label="Total Flight Hours"
-            value={`${drone.totalFlightHours}h`}
-          />
-          <InfoItem
-            label="Last Maintenance"
-            value={formatDate(drone.lastMaintenanceDate)}
-          />
-          <InfoItem
-            label="Next Maintenance"
-            value={formatDate(drone.nextMaintenanceDueDate)}
-          />
-          <InfoItem label="Registered" value={formatDate(drone.createdAt)} />
-          <InfoItem label="Last Updated" value={formatDate(drone.updatedAt)} />
-        </div>
-
-        {drone.status === "AVAILABLE" && (
-          <>
-            <Separator />
-            {retireError && (
-              <p className="text-sm text-destructive">{retireError}</p>
-            )}
-            <div className="flex justify-end">
-              <Button
-                variant="outline"
-                onClick={() => void handleRetire()}
-                disabled={retireDrone.isPending}
-                className="text-destructive hover:bg-destructive/10"
-              >
-                <PowerOff className="mr-2 h-4 w-4" />
-                {retireDrone.isPending ? "Retiring..." : "Retire Drone"}
-              </Button>
+    <>
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Plane className="h-5 w-5" />
+              {drone.serialNumber}
             </div>
-          </>
-        )}
-      </CardContent>
-    </Card>
+            <DroneStatusBadge status={drone.status} />
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+            <InfoItem label="Model" value={formatModel(drone.model)} />
+            <InfoItem
+              label="Total Flight Hours"
+              value={`${drone.totalFlightHours}h`}
+            />
+            <InfoItem
+              label="Last Maintenance"
+              value={formatDate(drone.lastMaintenanceDate)}
+            />
+            <InfoItem
+              label="Next Maintenance"
+              value={formatDate(drone.nextMaintenanceDueDate)}
+            />
+            <InfoItem label="Registered" value={formatDate(drone.createdAt)} />
+            <InfoItem
+              label="Last Updated"
+              value={formatDate(drone.updatedAt)}
+            />
+          </div>
+
+          {drone.status === "AVAILABLE" && (
+            <>
+              <Separator />
+              {retireError && (
+                <p className="text-sm text-destructive">{retireError}</p>
+              )}
+              <div className="flex justify-end">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowRetireConfirm(true)}
+                  disabled={retireDrone.isPending}
+                  className="text-destructive hover:bg-destructive/10"
+                >
+                  <PowerOff className="mr-2 h-4 w-4" />
+                  Retire Drone
+                </Button>
+              </div>
+            </>
+          )}
+        </CardContent>
+      </Card>
+
+      <ConfirmDialog
+        open={showRetireConfirm}
+        onOpenChange={setShowRetireConfirm}
+        title="Retire Drone"
+        description={`Are you sure you want to retire ${drone.serialNumber}? This action cannot be undone. The drone will no longer be available for missions.`}
+        confirmLabel="Retire"
+        variant="destructive"
+        onConfirm={() => void handleRetire()}
+        isPending={retireDrone.isPending}
+      />
+    </>
   );
 }
 

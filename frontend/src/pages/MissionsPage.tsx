@@ -1,5 +1,7 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useMissions } from "@/hooks/use-missions";
+import { useDroneMap } from "@/hooks/use-drone-map";
 import { MissionTable } from "@/features/missions/MissionTable";
 import { MissionCard } from "@/features/missions/MissionCard";
 import { MissionFilters } from "@/features/missions/MissionFilters";
@@ -11,6 +13,8 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { MissionStatus } from "@/types/mission.types";
 
 export function MissionsPage() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const newMissionDroneId = searchParams.get("newMission") ?? undefined;
   const [page, setPage] = useState(1);
   const [status, setStatus] = useState<MissionStatus | undefined>();
   const [droneId, setDroneId] = useState<string | undefined>();
@@ -28,6 +32,12 @@ export function MissionsPage() {
     endDate,
   });
 
+  const droneIds = useMemo(
+    () => data?.data.map((m) => m.droneId) ?? [],
+    [data],
+  );
+  const { data: droneMap } = useDroneMap(droneIds);
+
   function handleFilterChange() {
     setPage(1);
   }
@@ -43,7 +53,14 @@ export function MissionsPage() {
         </div>
         <div className="flex items-center gap-2">
           <ViewToggle view={view} onViewChange={setView} />
-          <CreateMissionDialog />
+          <CreateMissionDialog
+            defaultDroneId={newMissionDroneId}
+            autoOpen={!!newMissionDroneId}
+            onAutoOpenHandled={() => {
+              searchParams.delete("newMission");
+              setSearchParams(searchParams);
+            }}
+          />
         </div>
       </div>
 
@@ -101,12 +118,16 @@ export function MissionsPage() {
             ) : (
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {data.data.map((mission) => (
-                  <MissionCard key={mission.id} mission={mission} />
+                  <MissionCard
+                    key={mission.id}
+                    mission={mission}
+                    droneSerial={droneMap?.get(mission.droneId)?.serialNumber}
+                  />
                 ))}
               </div>
             )
           ) : (
-            <MissionTable missions={data.data} />
+            <MissionTable missions={data.data} droneMap={droneMap} />
           )}
 
           {data.meta.totalPages > 1 && (

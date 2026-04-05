@@ -7,12 +7,17 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
 import { DroneStatusBadge } from "./DroneStatusBadge";
 import { formatModel } from "./format-model";
 import type { Drone } from "@/types/drone.types";
+import { Target, Wrench } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface DroneTableProps {
   drones: Drone[];
+  onPlanMission?: (droneId: string) => void;
+  onSendToMaintenance?: (droneId: string) => void;
 }
 
 function formatDate(iso: string | null): string {
@@ -29,7 +34,21 @@ function isOverdue(iso: string | null): boolean {
   return new Date(iso).getTime() < Date.now();
 }
 
-export function DroneTable({ drones }: DroneTableProps) {
+function daysUntilMaintenance(iso: string | null): string {
+  if (!iso) return "";
+  const days = Math.ceil(
+    (new Date(iso).getTime() - Date.now()) / (1000 * 60 * 60 * 24),
+  );
+  if (days < 0) return `${Math.abs(days)}d overdue`;
+  if (days === 0) return "Today";
+  return `${days}d`;
+}
+
+export function DroneTable({
+  drones,
+  onPlanMission,
+  onSendToMaintenance,
+}: DroneTableProps) {
   const navigate = useNavigate();
 
   if (drones.length === 0) {
@@ -50,6 +69,7 @@ export function DroneTable({ drones }: DroneTableProps) {
             <TableHead>Status</TableHead>
             <TableHead className="text-right">Flight Hours</TableHead>
             <TableHead>Next Maintenance</TableHead>
+            <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -70,15 +90,58 @@ export function DroneTable({ drones }: DroneTableProps) {
                 {drone.totalFlightHours}h
               </TableCell>
               <TableCell>
-                <span
-                  className={
-                    isOverdue(drone.nextMaintenanceDueDate)
-                      ? "text-destructive font-medium"
-                      : ""
-                  }
-                >
-                  {formatDate(drone.nextMaintenanceDueDate)}
-                </span>
+                <div className="flex items-center gap-1.5">
+                  <span
+                    className={cn(
+                      isOverdue(drone.nextMaintenanceDueDate)
+                        ? "text-destructive font-medium"
+                        : "",
+                    )}
+                  >
+                    {formatDate(drone.nextMaintenanceDueDate)}
+                  </span>
+                  {drone.nextMaintenanceDueDate && (
+                    <span
+                      className={cn(
+                        "text-xs tabular-nums",
+                        isOverdue(drone.nextMaintenanceDueDate)
+                          ? "text-destructive"
+                          : "text-muted-foreground",
+                      )}
+                    >
+                      ({daysUntilMaintenance(drone.nextMaintenanceDueDate)})
+                    </span>
+                  )}
+                </div>
+              </TableCell>
+              <TableCell className="text-right">
+                {drone.status === "AVAILABLE" && (
+                  <div
+                    className="flex items-center justify-end gap-1"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {onPlanMission && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => onPlanMission(drone.id)}
+                      >
+                        <Target className="mr-1 h-3.5 w-3.5" />
+                        Mission
+                      </Button>
+                    )}
+                    {onSendToMaintenance && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => onSendToMaintenance(drone.id)}
+                      >
+                        <Wrench className="mr-1 h-3.5 w-3.5" />
+                        Maintain
+                      </Button>
+                    )}
+                  </div>
+                )}
               </TableCell>
             </TableRow>
           ))}

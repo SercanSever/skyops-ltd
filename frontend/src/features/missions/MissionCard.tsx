@@ -1,6 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { MissionStatusBadge } from "./MissionStatusBadge";
 import { MissionActions } from "./MissionActions";
+import { DroneLink } from "@/features/drones/DroneLink";
 import type { Mission } from "@/types/mission.types";
 import { MapPin, User, Calendar } from "lucide-react";
 
@@ -22,9 +23,10 @@ function formatType(type: string): string {
 
 interface MissionCardProps {
   mission: Mission;
+  droneSerial?: string;
 }
 
-export function MissionCard({ mission }: MissionCardProps) {
+export function MissionCard({ mission, droneSerial }: MissionCardProps) {
   return (
     <Card>
       <CardContent className="space-y-3">
@@ -41,6 +43,9 @@ export function MissionCard({ mission }: MissionCardProps) {
         </div>
 
         <div className="space-y-1 text-xs text-muted-foreground">
+          <div className="flex items-center gap-1.5">
+            <DroneLink droneId={mission.droneId} serialNumber={droneSerial} />
+          </div>
           <div className="flex items-center gap-1.5">
             <User className="h-3 w-3 shrink-0" />
             <span>{mission.pilotName}</span>

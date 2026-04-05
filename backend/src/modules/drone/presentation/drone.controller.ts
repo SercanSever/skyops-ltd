@@ -16,6 +16,7 @@ import { ListDronesUseCase } from '../application/use-cases/list-drones.use-case
 import { UpdateDroneUseCase } from '../application/use-cases/update-drone.use-case';
 import { RetireDroneUseCase } from '../application/use-cases/retire-drone.use-case';
 import { DeleteDroneUseCase } from '../application/use-cases/delete-drone.use-case';
+import { GetDronesByIdsUseCase } from '../application/use-cases/get-drones-by-ids.use-case';
 import { CreateDroneRequestDto } from './dto/create-drone.request.dto';
 import { UpdateDroneRequestDto } from './dto/update-drone.request.dto';
 import { DroneFilterQueryDto } from './dto/drone-filter-query.dto';
@@ -30,6 +31,7 @@ export class DroneController {
     private readonly updateDroneUseCase: UpdateDroneUseCase,
     private readonly retireDroneUseCase: RetireDroneUseCase,
     private readonly deleteDroneUseCase: DeleteDroneUseCase,
+    private readonly getDronesByIdsUseCase: GetDronesByIdsUseCase,
   ) {}
 
   @Post()
@@ -60,6 +62,13 @@ export class DroneController {
         totalPages: Math.ceil(total / query.limit),
       },
     };
+  }
+
+  @Get('batch')
+  async findByIds(@Query('ids') ids: string) {
+    const idList = ids ? ids.split(',').filter(Boolean) : [];
+    const drones = await this.getDronesByIdsUseCase.execute(idList);
+    return drones.map((drone) => DroneResponseDto.fromDomain(drone));
   }
 
   @Get(':id')

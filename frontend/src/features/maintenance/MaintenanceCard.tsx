@@ -2,6 +2,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useCompleteMaintenance } from "@/hooks/use-maintenance";
+import { DroneLink } from "@/features/drones/DroneLink";
 import type { MaintenanceLog } from "@/types/maintenance.types";
 import { User, Calendar, CheckCircle } from "lucide-react";
 
@@ -22,9 +23,10 @@ function formatType(type: string): string {
 
 interface MaintenanceCardProps {
   log: MaintenanceLog;
+  droneSerial?: string;
 }
 
-export function MaintenanceCard({ log }: MaintenanceCardProps) {
+export function MaintenanceCard({ log, droneSerial }: MaintenanceCardProps) {
   const completeMaintenance = useCompleteMaintenance();
 
   return (
@@ -38,6 +40,9 @@ export function MaintenanceCard({ log }: MaintenanceCardProps) {
         </div>
 
         <div className="space-y-1 text-xs text-muted-foreground">
+          <div className="flex items-center gap-1.5">
+            <DroneLink droneId={log.droneId} serialNumber={droneSerial} />
+          </div>
           <div className="flex items-center gap-1.5">
             <User className="h-3 w-3 shrink-0" />
             <span>{log.technicianName}</span>
