@@ -72,6 +72,15 @@ export class TransitionMissionUseCase {
     if (input.status === MissionStatus.COMPLETED && input.flightHours) {
       drone.addFlightHours(input.flightHours);
       drone.calculateNextMaintenanceDate();
+
+      // Case study: "The system should check if maintenance is now due"
+      // If either 50-hour or 90-day rule is triggered after adding
+      // flight hours, set nextMaintenanceDueDate to now so dashboard
+      // shows it as overdue maintenance
+      if (drone.isMaintenanceDue()) {
+        drone.setNextMaintenanceDueDate(new Date());
+      }
+
       drone.setAvailable();
       await this.droneRepository.save(drone);
     }

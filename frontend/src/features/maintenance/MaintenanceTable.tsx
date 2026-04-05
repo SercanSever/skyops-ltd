@@ -90,7 +90,7 @@ export function MaintenanceTable({ logs, droneMap }: MaintenanceTableProps) {
                 <TableCell className="text-right tabular-nums">
                   {log.flightHoursAtMaintenance}h
                 </TableCell>
-                <TableCell className="max-w-[200px] truncate text-muted-foreground">
+                <TableCell className="max-w-50 truncate text-muted-foreground">
                   {log.notes ?? "—"}
                 </TableCell>
                 <TableCell className="text-right">

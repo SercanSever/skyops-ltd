@@ -116,7 +116,7 @@ export function MaintenanceAlerts({
           </CardAction>
         )}
       </CardHeader>
-      <CardContent>
+      <CardContent className="min-h-[280px]">
         <div className="space-y-2">
           {paged.map((drone) => {
             if (drone.kind === "overdue") {

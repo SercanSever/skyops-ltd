@@ -85,32 +85,34 @@ export function DronesPage() {
         </div>
       ) : data ? (
         <>
-          {view === "grid" ? (
-            data.data.length === 0 ? (
-              <div className="rounded-lg border p-8 text-center">
-                <p className="text-sm text-muted-foreground">
-                  No drones found.
-                </p>
-              </div>
+          <div className="h-[580px] overflow-y-auto">
+            {view === "grid" ? (
+              data.data.length === 0 ? (
+                <div className="rounded-lg border p-8 text-center">
+                  <p className="text-sm text-muted-foreground">
+                    No drones found.
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {data.data.map((drone) => (
+                    <DroneCard
+                      key={drone.id}
+                      drone={drone}
+                      onPlanMission={handlePlanMission}
+                      onSendToMaintenance={handleSendToMaintenance}
+                    />
+                  ))}
+                </div>
+              )
             ) : (
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {data.data.map((drone) => (
-                  <DroneCard
-                    key={drone.id}
-                    drone={drone}
-                    onPlanMission={handlePlanMission}
-                    onSendToMaintenance={handleSendToMaintenance}
-                  />
-                ))}
-              </div>
-            )
-          ) : (
-            <DroneTable
-              drones={data.data}
-              onPlanMission={handlePlanMission}
-              onSendToMaintenance={handleSendToMaintenance}
-            />
-          )}
+              <DroneTable
+                drones={data.data}
+                onPlanMission={handlePlanMission}
+                onSendToMaintenance={handleSendToMaintenance}
+              />
+            )}
+          </div>
 
           {data.meta.totalPages > 1 && (
             <div className="flex items-center justify-between">

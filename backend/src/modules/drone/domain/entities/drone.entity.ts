@@ -107,6 +107,11 @@ export class Drone {
     this.props.updatedAt = new Date();
   }
 
+  setNextMaintenanceDueDate(date: Date): void {
+    this.props.nextMaintenanceDueDate = date;
+    this.props.updatedAt = new Date();
+  }
+
   isMaintenanceDue(flightHoursAtLastMaintenance?: number): boolean {
     const now = new Date();
 

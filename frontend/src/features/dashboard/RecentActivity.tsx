@@ -71,7 +71,7 @@ export function RecentActivity() {
           </CardAction>
         )}
       </CardHeader>
-      <CardContent>
+      <CardContent className="min-h-[280px]">
         {isLoading ? (
           <div className="space-y-3">
             {Array.from({ length: 4 }).map((_, i) => (
