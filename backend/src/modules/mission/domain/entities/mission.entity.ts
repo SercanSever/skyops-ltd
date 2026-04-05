@@ -182,7 +182,10 @@ export class Mission {
         break;
 
       case MissionStatus.ABORTED:
-        this.props.abortReason = data?.abortReason ?? null;
+        if (!data?.abortReason || data.abortReason.trim().length === 0) {
+          throw new Error('Abort reason is required when aborting a mission');
+        }
+        this.props.abortReason = data.abortReason;
         this.props.actualEndTime = now;
         break;
     }

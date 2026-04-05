@@ -187,17 +187,28 @@ describe('Mission', () => {
 
     it('Any → ABORTED should set actualEndTime', () => {
       const mission = createMission();
-      mission.transitionTo(MissionStatus.ABORTED);
+      mission.transitionTo(MissionStatus.ABORTED, {
+        abortReason: 'Test reason',
+      });
 
       expect(mission.status).toBe(MissionStatus.ABORTED);
       expect(mission.actualEndTime).toBeInstanceOf(Date);
     });
 
-    it('ABORTED without reason should succeed', () => {
+    it('ABORTED without reason should throw', () => {
       const mission = createMission();
-      mission.transitionTo(MissionStatus.ABORTED);
+      expect(() => mission.transitionTo(MissionStatus.ABORTED)).toThrow(
+        'Abort reason is required',
+      );
+    });
 
-      expect(mission.abortReason).toBeNull();
+    it('ABORTED with empty reason should throw', () => {
+      const mission = createMission();
+      expect(() =>
+        mission.transitionTo(MissionStatus.ABORTED, {
+          abortReason: '  ',
+        }),
+      ).toThrow('Abort reason is required');
     });
 
     it('ABORTED with reason should store it', () => {
@@ -229,11 +240,15 @@ describe('Mission', () => {
 
     it('ABORTED is terminal - no further transitions', () => {
       const mission = createMission();
-      mission.transitionTo(MissionStatus.ABORTED);
+      mission.transitionTo(MissionStatus.ABORTED, {
+        abortReason: 'Test reason',
+      });
 
-      expect(() => mission.transitionTo(MissionStatus.PLANNED)).toThrow(
-        'Invalid state transition',
-      );
+      expect(() =>
+        mission.transitionTo(MissionStatus.PLANNED, {
+          abortReason: 'Another reason',
+        }),
+      ).toThrow('Invalid state transition');
     });
 
     it('IN_PROGRESS → ABORTED should set actualEndTime', () => {
