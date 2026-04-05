@@ -58,6 +58,7 @@ describe('TransitionMissionUseCase', () => {
       findById: jest.fn(),
       findBySerialNumber: jest.fn(),
       findAll: jest.fn(),
+      findByIds: jest.fn(),
       save: jest.fn(),
       delete: jest.fn(),
       hasScheduledMissions: jest.fn(),
