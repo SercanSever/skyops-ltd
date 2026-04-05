@@ -75,6 +75,8 @@ test.describe("Full Flow", () => {
       .locator("tr")
       .filter({ hasText: "E2E Test Mission" });
     await missionRow.getByRole("button", { name: "Start Pre-Flight" }).click();
+    // Confirm dialog appears — click Proceed
+    await page.getByRole("button", { name: "Proceed" }).click();
 
     // After transition, "Start Mission" button should appear in the same row
     await expect(
@@ -83,6 +85,8 @@ test.describe("Full Flow", () => {
 
     // 7. Transition: PRE_FLIGHT_CHECK → IN_PROGRESS
     await missionRow.getByRole("button", { name: "Start Mission" }).click();
+    // Confirm dialog appears — click Proceed
+    await page.getByRole("button", { name: "Proceed" }).click();
 
     // After transition, "Complete" button should appear
     await expect(
