@@ -113,7 +113,13 @@ export function FleetOverviewCards({ data }: FleetOverviewCardsProps) {
         <Card
           size="sm"
           className="group cursor-pointer transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5"
-          onClick={() => navigate("/missions")}
+          onClick={() => {
+            const now = new Date();
+            const next24h = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+            navigate(
+              `/missions?startDate=${now.toISOString()}&endDate=${next24h.toISOString()}&status=PLANNED,PRE_FLIGHT_CHECK`,
+            );
+          }}
         >
           <CardContent className="flex items-center gap-3">
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted transition-transform duration-200 group-hover:scale-110">

@@ -4,11 +4,11 @@ import { X } from "lucide-react";
 import type { MissionStatus } from "@/types/mission.types";
 
 interface MissionFiltersProps {
-  status: MissionStatus | undefined;
+  status: string | undefined;
   droneId: string | undefined;
   startDate: string | undefined;
   endDate: string | undefined;
-  onStatusChange: (status: MissionStatus | undefined) => void;
+  onStatusChange: (status: string | undefined) => void;
   onDroneIdChange: (droneId: string | undefined) => void;
   onStartDateChange: (date: string | undefined) => void;
   onEndDateChange: (date: string | undefined) => void;
@@ -46,7 +46,7 @@ export function MissionFilters({
         value={status ?? ""}
         onChange={(e) =>
           onStatusChange(
-            (e.target.value || undefined) as MissionStatus | undefined,
+            e.target.value || undefined,
           )
         }
         className="h-9 rounded-md border bg-background px-3 text-sm text-foreground"
@@ -72,21 +72,25 @@ export function MissionFilters({
         ))}
       </select>
 
-      <Input
-        type="date"
-        value={startDate ?? ""}
-        onChange={(e) => onStartDateChange(e.target.value || undefined)}
-        className="h-9 w-auto"
-        placeholder="Start date"
-      />
+      <div className="flex items-center gap-1.5">
+        <label className="text-xs text-muted-foreground whitespace-nowrap">Plan Start</label>
+        <Input
+          type="date"
+          value={startDate?.split("T")[0] ?? ""}
+          onChange={(e) => onStartDateChange(e.target.value || undefined)}
+          className="h-9 w-auto"
+        />
+      </div>
 
-      <Input
-        type="date"
-        value={endDate ?? ""}
-        onChange={(e) => onEndDateChange(e.target.value || undefined)}
-        className="h-9 w-auto"
-        placeholder="End date"
-      />
+      <div className="flex items-center gap-1.5">
+        <label className="text-xs text-muted-foreground whitespace-nowrap">Plan End</label>
+        <Input
+          type="date"
+          value={endDate?.split("T")[0] ?? ""}
+          onChange={(e) => onEndDateChange(e.target.value || undefined)}
+          className="h-9 w-auto"
+        />
+      </div>
 
       {hasActiveFilters && (
         <button

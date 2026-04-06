@@ -31,7 +31,13 @@ export class MissionRepository implements IMissionRepository {
     const qb = this.repository.createQueryBuilder('mission');
 
     if (options?.status) {
-      qb.andWhere('mission.status = :status', { status: options.status });
+      if (Array.isArray(options.status)) {
+        qb.andWhere('mission.status IN (:...statuses)', {
+          statuses: options.status,
+        });
+      } else {
+        qb.andWhere('mission.status = :status', { status: options.status });
+      }
     }
     if (options?.droneId) {
       qb.andWhere('mission.droneId = :droneId', { droneId: options.droneId });
@@ -42,7 +48,7 @@ export class MissionRepository implements IMissionRepository {
       });
     }
     if (options?.endDate) {
-      qb.andWhere('mission.plannedEndTime <= :endDate', {
+      qb.andWhere('mission.plannedStartTime <= :endDate', {
         endDate: options.endDate,
       });
     }

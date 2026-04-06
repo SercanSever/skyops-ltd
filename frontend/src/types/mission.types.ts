@@ -46,7 +46,7 @@ export interface TransitionMissionRequest {
 export interface MissionFilterParams {
   page?: number;
   limit?: number;
-  status?: MissionStatus;
+  status?: MissionStatus | string;
   droneId?: string;
   startDate?: string;
   endDate?: string;

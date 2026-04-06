@@ -4,7 +4,7 @@ import { MissionStatus } from '../enums/mission-status.enum';
 export interface FindAllMissionsOptions {
   page?: number;
   limit?: number;
-  status?: MissionStatus;
+  status?: MissionStatus | MissionStatus[];
   droneId?: string;
   startDate?: Date;
   endDate?: Date;

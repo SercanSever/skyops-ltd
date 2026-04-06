@@ -13,6 +13,7 @@ import { CreateMissionUseCase } from '../application/use-cases/create-mission.us
 import { GetMissionUseCase } from '../application/use-cases/get-mission.use-case';
 import { ListMissionsUseCase } from '../application/use-cases/list-missions.use-case';
 import { TransitionMissionUseCase } from '../application/use-cases/transition-mission.use-case';
+import { MissionStatus } from '../domain/enums/mission-status.enum';
 import { CreateMissionRequestDto } from './dto/create-mission.request.dto';
 import { TransitionMissionRequestDto } from './dto/transition-mission.request.dto';
 import { MissionFilterQueryDto } from './dto/mission-filter-query.dto';
@@ -44,10 +45,16 @@ export class MissionController {
 
   @Get()
   async list(@Query() query: MissionFilterQueryDto) {
+    let status: MissionStatus | MissionStatus[] | undefined;
+    if (query.status) {
+      const parts = query.status.split(',') as MissionStatus[];
+      status = parts.length === 1 ? parts[0] : parts;
+    }
+
     const { data, total } = await this.listMissionsUseCase.execute({
       page: query.page,
       limit: query.limit,
-      status: query.status,
+      status,
       droneId: query.droneId,
       startDate: query.startDate ? new Date(query.startDate) : undefined,
       endDate: query.endDate ? new Date(query.endDate) : undefined,

@@ -10,16 +10,23 @@ import { ViewToggle } from "@/components/ui/view-toggle";
 import { useViewPreference } from "@/hooks/use-view-preference";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import type { MissionStatus } from "@/types/mission.types";
 
 export function MissionsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const newMissionDroneId = searchParams.get("newMission") ?? undefined;
   const [page, setPage] = useState(1);
-  const [status, setStatus] = useState<MissionStatus | undefined>();
-  const [droneId, setDroneId] = useState<string | undefined>();
-  const [startDate, setStartDate] = useState<string | undefined>();
-  const [endDate, setEndDate] = useState<string | undefined>();
+  const [status, setStatus] = useState<string | undefined>(
+    searchParams.get("status") || undefined,
+  );
+  const [droneId, setDroneId] = useState<string | undefined>(
+    searchParams.get("droneId") || undefined,
+  );
+  const [startDate, setStartDate] = useState<string | undefined>(
+    searchParams.get("startDate") || undefined,
+  );
+  const [endDate, setEndDate] = useState<string | undefined>(
+    searchParams.get("endDate") || undefined,
+  );
   const [view, setView] = useViewPreference();
   const limit = 12;
 
