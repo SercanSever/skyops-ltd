@@ -44,11 +44,7 @@ export function MissionFilters({
     <div className="flex flex-wrap items-center gap-3">
       <select
         value={status ?? ""}
-        onChange={(e) =>
-          onStatusChange(
-            e.target.value || undefined,
-          )
-        }
+        onChange={(e) => onStatusChange(e.target.value || undefined)}
         className="h-9 rounded-md border bg-background px-3 text-sm text-foreground"
       >
         <option value="">All Statuses</option>
@@ -73,7 +69,9 @@ export function MissionFilters({
       </select>
 
       <div className="flex items-center gap-1.5">
-        <label className="text-xs text-muted-foreground whitespace-nowrap">Plan Start</label>
+        <label className="text-xs text-muted-foreground whitespace-nowrap">
+          Plan Start
+        </label>
         <Input
           type="date"
           value={startDate?.split("T")[0] ?? ""}
@@ -83,7 +81,9 @@ export function MissionFilters({
       </div>
 
       <div className="flex items-center gap-1.5">
-        <label className="text-xs text-muted-foreground whitespace-nowrap">Plan End</label>
+        <label className="text-xs text-muted-foreground whitespace-nowrap">
+          Plan End
+        </label>
         <Input
           type="date"
           value={endDate?.split("T")[0] ?? ""}
