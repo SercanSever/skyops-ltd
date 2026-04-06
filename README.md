@@ -222,6 +222,23 @@ The script is idempotent — safe to re-run (truncates and re-inserts).
 
 ## Project Architecture
 
+### Why DDD + Clean Architecture?
+
+This project manages 150+ industrial drones with a complex mission lifecycle (5-state state machine), maintenance rules with dual thresholds (50 flight hours / 90 days), and cross-entity side effects (e.g., completing a mission updates drone flight hours and triggers maintenance checks). These intertwined business rules demand a clear separation of concerns:
+
+- **Isolated domain logic**: Business rules live in pure TypeScript entities with zero framework dependencies. This makes them independently testable and ensures they survive if the framework changes (Dependency Inversion Principle).
+- **Single Responsibility per layer**: Presentation handles HTTP, Infrastructure handles persistence, Application orchestrates use cases, Domain owns business rules. A change in one layer does not ripple across the system.
+- **Testability through abstractions**: Repository interfaces are defined in the domain layer and implemented in infrastructure. Use case tests mock the interface, not the database — making unit tests fast and reliable.
+
+### Key Design Principles
+
+- **Dependency Rule**: Dependencies flow inward only. The domain layer imports nothing from NestJS or TypeORM.
+- **Use Case pattern**: Each business operation is a single class with one public method (SRP). Easy to test, easy to trace through the codebase.
+- **Value Objects**: Self-validating domain primitives (e.g., `SerialNumber` enforces the `SKY-XXXX-XXXX` format in its constructor). Invalid data cannot exist as a domain object.
+- **State Machine in Entity**: Mission lifecycle transitions are validated inside the domain entity itself — invalid transitions (e.g., `COMPLETED → PLANNED`) are rejected at the domain level, not in controllers.
+
+### Layer Diagram
+
 ```text
 DDD + Clean Architecture — 4 layers per domain module
 
