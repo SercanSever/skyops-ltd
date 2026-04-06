@@ -85,7 +85,7 @@ export function DronesPage() {
         </div>
       ) : data ? (
         <>
-          <div className="h-[580px] overflow-y-auto">
+          <div className="h-[580px] overflow-y-auto p-1">
             {view === "grid" ? (
               data.data.length === 0 ? (
                 <div className="rounded-lg border p-8 text-center">
