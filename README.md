@@ -38,6 +38,10 @@ nvm use
 
 # 3. Start all services with Docker
 docker compose up -d
+
+# 4. Wait for all containers to be healthy, then run migrations and seed data
+docker compose exec backend npm run migration:run
+docker compose exec backend npm run seed
 ```
 
 After all containers are running, the application is available at:
