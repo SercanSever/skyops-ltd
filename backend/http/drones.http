@@ -34,6 +34,9 @@ GET http://localhost:3000/api/drones?status=AVAILABLE
 ### List Drones (filter by model)
 GET http://localhost:3000/api/drones?model=PHANTOM_4
 
+### Get Drones by IDs (batch)
+GET http://localhost:3000/api/drones/batch?ids={{droneId1}},{{droneId2}}
+
 ### Get Drone by ID
 GET http://localhost:3000/api/drones/{{droneId}}
 
