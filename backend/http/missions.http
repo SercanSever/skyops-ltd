@@ -18,7 +18,7 @@ Content-Type: application/json
 {
   "name": "Wind Farm Alpha Inspection",
   "type": "WIND_TURBINE_INSPECTION",
-  "droneId": "{{droneId}}",
+  "droneId": "9d12ab28-92ee-4254-9272-56ea1d73521f",
   "pilotName": "John Doe",
   "siteLocation": "Wind Farm Alpha - North Sector",
   "plannedStartTime": "2027-01-15T10:00:00Z",
@@ -32,15 +32,15 @@ GET http://localhost:3000/api/missions?page=1&limit=10
 GET http://localhost:3000/api/missions?status=PLANNED
 
 ### List Missions (filtered by droneId)
-GET http://localhost:3000/api/missions?droneId={{droneId}}
+GET http://localhost:3000/api/missions?droneId=9d12ab28-92ee-4254-9272-56ea1d73521f
 
 ### Get Mission by ID
-GET http://localhost:3000/api/missions/{{missionId}}
+GET http://localhost:3000/api/missions/f68a5886-75d1-4808-af0a-4392bd8a31fd
 
 ### --- State Transitions ---
 
 ### Transition: PLANNED → PRE_FLIGHT_CHECK
-PATCH http://localhost:3000/api/missions/{{missionId}}/transition
+PATCH http://localhost:3000/api/missions/f68a5886-75d1-4808-af0a-4392bd8a31fd/transition
 Content-Type: application/json
 
 {
@@ -48,7 +48,7 @@ Content-Type: application/json
 }
 
 ### Transition: PRE_FLIGHT_CHECK → IN_PROGRESS
-PATCH http://localhost:3000/api/missions/{{missionId}}/transition
+PATCH http://localhost:3000/api/missions/f68a5886-75d1-4808-af0a-4392bd8a31fd/transition
 Content-Type: application/json
 
 {
@@ -56,7 +56,7 @@ Content-Type: application/json
 }
 
 ### Transition: IN_PROGRESS → COMPLETED
-PATCH http://localhost:3000/api/missions/{{missionId}}/transition
+PATCH http://localhost:3000/api/missions/f68a5886-75d1-4808-af0a-4392bd8a31fd/transition
 Content-Type: application/json
 
 {
@@ -65,7 +65,7 @@ Content-Type: application/json
 }
 
 ### Transition: PLANNED → ABORTED (with reason)
-PATCH http://localhost:3000/api/missions/{{missionId}}/transition
+PATCH http://localhost:3000/api/missions/f68a5886-75d1-4808-af0a-4392bd8a31fd/transition
 Content-Type: application/json
 
 {
@@ -74,7 +74,7 @@ Content-Type: application/json
 }
 
 ### Transition: PLANNED → ABORTED (without reason — should fail 422)
-PATCH http://localhost:3000/api/missions/{{missionId}}/transition
+PATCH http://localhost:3000/api/missions/f68a5886-75d1-4808-af0a-4392bd8a31fd/transition
 Content-Type: application/json
 
 {
@@ -82,7 +82,7 @@ Content-Type: application/json
 }
 
 ### Transition: PLANNED → ABORTED (with reason)
-PATCH http://localhost:3000/api/missions/{{missionId}}/transition
+PATCH http://localhost:3000/api/missions/f68a5886-75d1-4808-af0a-4392bd8a31fd/transition
 Content-Type: application/json
 
 {
@@ -99,7 +99,7 @@ Content-Type: application/json
 {
   "name": "Past Mission",
   "type": "SOLAR_PANEL_SURVEY",
-  "droneId": "{{droneId}}",
+  "droneId": "9d12ab28-92ee-4254-9272-56ea1d73521f",
   "pilotName": "Jane",
   "siteLocation": "Solar Farm",
   "plannedStartTime": "2020-01-01T10:00:00Z",
@@ -113,7 +113,7 @@ Content-Type: application/json
 {
   "name": "Bad Times",
   "type": "POWER_LINE_PATROL",
-  "droneId": "{{droneId}}",
+  "droneId": "9d12ab28-92ee-4254-9272-56ea1d73521f",
   "pilotName": "Jane",
   "siteLocation": "Power Line Grid",
   "plannedStartTime": "2027-06-01T14:00:00Z",
@@ -127,7 +127,7 @@ Content-Type: application/json
 {
   "name": "Overlapping Mission",
   "type": "SOLAR_PANEL_SURVEY",
-  "droneId": "{{droneId}}",
+  "droneId": "9d12ab28-92ee-4254-9272-56ea1d73521f",
   "pilotName": "Jane",
   "siteLocation": "Solar Farm",
   "plannedStartTime": "2027-01-15T12:00:00Z",
@@ -135,7 +135,7 @@ Content-Type: application/json
 }
 
 ### Invalid: Invalid transition (should fail 422)
-PATCH http://localhost:3000/api/missions/{{missionId}}/transition
+PATCH http://localhost:3000/api/missions/f68a5886-75d1-4808-af0a-4392bd8a31fd/transition
 Content-Type: application/json
 
 {

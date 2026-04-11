@@ -12,25 +12,44 @@ When the user references a phase number from `implementation-plan.md`:
 4. **STOP and wait** for the user to say **`--commitpr`**
 5. Do NOT commit, push, or create a PR until explicitly told
 
-## --commitpr
-
-When the user says `--commitpr`:
-
-1. Stage relevant files and create a descriptive commit
-2. If a PR already exists for the current branch: **push to the existing branch** (the PR updates automatically)
-3. If no PR exists yet: push to remote and create a new PR via `gh pr create` targeting `main`
-4. Share the PR URL with the user
-
-## --newfeature \<description\>
+## --newfeature `<description>`
 
 When the user's message starts with `--newfeature`:
 
 1. Parse the feature description from the message
-2. Add the feature as a new phase in `implementation-plan.md` (next available number, appropriate branch name)
-3. Create the feature branch from `main`
-4. Implement the feature following all project rules (DDD layers if backend, folder structure, testing standards, etc.)
-5. **STOP and wait** for the user to say **`--commitpr`**
+2. Analyze the codebase to understand what changes are needed
+3. Present an implementation plan to the user:
+   - Which layers will be affected (domain, application, infrastructure, presentation)
+   - Which files will be created or modified
+   - Branch name proposal: `feature/<short-kebab-case-name>` (e.g., `--newfeature add login button` → `feature/login-button`, 2-4 words max)
+4. **STOP and wait** for the user to approve the plan
+5. Once approved:
+   - Ensure `main` is up to date (`git checkout main && git pull origin main`)
+   - Create the feature branch from `main` (`git checkout -b feature/<name>`)
+   - Implement the feature following all project rules (DDD layers if backend, folder structure, testing standards, etc.)
+   - **Auto-generate tests:** If domain or application layer code was added or modified, automatically write or update the corresponding unit tests (co-located `*.spec.ts` files). Follow the testing standards defined in the project rules. The user will run `npm run test` manually to verify.
+   - **STOP and wait** for the user to say **`--commitpr`**
 6. Do NOT commit, push, or create a PR until explicitly told
+
+## --commitpr
+
+When the user says `--commitpr`:
+
+1. Stage relevant files and create a descriptive commit following the commit message format (`type(scope): description`)
+2. Push the branch to remote (`git push -u origin <branch-name>`)
+3. If a PR already exists for the current branch: **push to the existing branch** (the PR updates automatically)
+4. If no PR exists yet: create a new PR via `gh pr create` targeting `main`
+5. Share the PR URL with the user
+6. **STOP and wait** — do NOT merge, do NOT switch branches. The user will merge the PR manually on GitHub.
+
+## --mergedone
+
+When the user says `--mergedone` (after they have manually merged the PR on GitHub):
+
+1. Switch to main branch: `git checkout main`
+2. Pull the latest changes: `git pull origin main`
+3. Delete the local feature branch: `git branch -d <branch-name>`
+4. Confirm the current state: report the current branch (`main`) and that the project is up to date
 
 ## --issue
 
@@ -39,10 +58,35 @@ When the user says `--issue`:
 1. Check open issues on GitHub via `gh issue list --state open`
 2. Read the most recent open issue details via `gh issue view <number>`
 3. Diagnose the problem described in the issue
-4. Implement the fix (code changes, test fixes, CI fixes, etc.)
-5. **STOP and wait** for the user to say **`--commitpr`**
-6. Do NOT commit, push, or create a PR until explicitly told
-7. When `--commitpr` is given, include `Closes #<issue-number>` in the commit message so the issue auto-closes on merge
+4. Present a fix plan to the user (what is broken, why, and how to fix it)
+5. **STOP and wait** for the user to approve the plan
+6. Once approved:
+   - Ensure `main` is up to date (`git checkout main && git pull origin main`)
+   - Create a fix branch from `main` (`fix/<short-description-from-issue>`)
+   - Implement the fix (code changes, test fixes, CI fixes, etc.)
+   - **STOP and wait** for the user to say **`--commitpr`**
+7. Do NOT commit, push, or create a PR until explicitly told
+8. When `--commitpr` is given, include `Closes #<issue-number>` in the commit message so the issue auto-closes on merge
+
+## --rune2e
+
+When the user says `--rune2e`:
+
+1. Run backend integration tests: `cd backend && npm run test:e2e`
+2. Run frontend E2E tests: `cd frontend && npx playwright test`
+3. If **all tests pass**: report success with a summary of tests run
+4. If **any test fails**:
+   - Read the error output and diagnose the root cause
+   - Present a fix plan to the user (what failed, why, and how to fix it)
+   - **STOP and wait** for the user to approve the plan
+   - Once approved:
+     - Ensure `main` is up to date (`git checkout main && git pull origin main`)
+     - Create a fix branch from `main` (`fix/<short-description>`)
+     - Implement the fixes
+     - Re-run the failing test suite to verify the fix
+     - **STOP and wait** for `--commitpr`
+   - The full cycle then follows: `--commitpr` → user merges on GitHub → `--mergedone`
+5. Do NOT commit, push, or create a PR automatically — always wait for `--commitpr`
 
 ## --issuedone
 
@@ -55,3 +99,5 @@ When the user says `--issuedone`:
 ## Key Principle
 
 **Never commit, push, or create a PR automatically.** Always wait for the explicit `--commitpr` command. This applies to ALL changes — phase implementations, bug fixes, issue fixes, feature additions. The only action that triggers git operations is `--commitpr`.
+
+After `--mergedone`, always end up on a clean, up-to-date `main` branch ready for the next task.

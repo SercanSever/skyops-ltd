@@ -35,13 +35,13 @@ GET http://localhost:3000/api/drones?status=AVAILABLE
 GET http://localhost:3000/api/drones?model=PHANTOM_4
 
 ### Get Drones by IDs (batch)
-GET http://localhost:3000/api/drones/batch?ids={{droneId1}},{{droneId2}}
+GET http://localhost:3000/api/drones/batch?ids=65de471b-c996-4bb2-8951-c1792b35cefc,a6bf8f56-fe1c-467c-977c-3993b328830a
 
 ### Get Drone by ID
-GET http://localhost:3000/api/drones/{{droneId}}
+GET http://localhost:3000/api/drones/a6bf8f56-fe1c-467c-977c-3993b328830a
 
 ### Update Drone
-PATCH http://localhost:3000/api/drones/{{droneId}}
+PATCH http://localhost:3000/api/drones/a6bf8f56-fe1c-467c-977c-3993b328830a
 Content-Type: application/json
 
 {
@@ -49,10 +49,10 @@ Content-Type: application/json
 }
 
 ### Retire Drone
-PATCH http://localhost:3000/api/drones/{{droneId}}/retire
+PATCH http://localhost:3000/api/drones/a6bf8f56-fe1c-467c-977c-3993b328830a/retire
 
 ### Delete Drone
-DELETE http://localhost:3000/api/drones/{{droneId}}
+DELETE http://localhost:3000/api/drones/a6bf8f56-fe1c-467c-977c-3993b328830a
 
 ### --- Validation Error Cases ---
 

@@ -363,7 +363,6 @@ npm run migration:show
 #### Enum Types (PostgreSQL native)
 
 | Enum Name | Values |
-|---|---|
 | `drone_status` | AVAILABLE, IN_MISSION, MAINTENANCE, RETIRED |
 | `drone_model` | PHANTOM_4, MATRICE_300, MAVIC_3_ENTERPRISE |
 | `mission_status` | PLANNED, PRE_FLIGHT_CHECK, IN_PROGRESS, COMPLETED, ABORTED |
@@ -374,7 +373,6 @@ npm run migration:show
 
 **`drones`**
 | Column | Type | Constraints |
-|---|---|---|
 | id | UUID | PK, auto-generated |
 | serial_number | VARCHAR | NOT NULL, UNIQUE INDEX |
 | model | drone_model (enum) | NOT NULL |
@@ -387,7 +385,6 @@ npm run migration:show
 
 **`missions`**
 | Column | Type | Constraints |
-|---|---|---|
 | id | UUID | PK, auto-generated |
 | name | VARCHAR | NOT NULL |
 | type | mission_type (enum) | NOT NULL |
@@ -406,7 +403,6 @@ npm run migration:show
 
 **`maintenance_logs`**
 | Column | Type | Constraints |
-|---|---|---|
 | id | UUID | PK, auto-generated |
 | drone_id | UUID | NOT NULL, FK → drones(id) ON DELETE RESTRICT, INDEX |
 | type | maintenance_type (enum) | NOT NULL |
@@ -566,6 +562,7 @@ ABORTED        ABORTED             ABORTED
 ```
 
 Key transition rules:
+
 - PRE_FLIGHT_CHECK → IN_PROGRESS: sets `actualStartTime`
 - IN_PROGRESS → COMPLETED: requires `flightHours > 0`, sets `actualEndTime`
 - Any → ABORTED: `abortReason` is optional, sets `actualEndTime`
@@ -630,7 +627,6 @@ const queryClient = new QueryClient({
 Query keys follow a consistent naming convention across all hooks:
 
 | Hook | Query Key | Description |
-|---|---|---|
 | `useDrones(params)` | `["drones", params]` | List with filters/pagination |
 | `useDrone(id)` | `["drones", id]` | Single drone |
 | `useMissions(params)` | `["missions", params]` | List with filters/pagination |
@@ -659,7 +655,6 @@ const useTransitionMission = () => useMutation({
 **Invalidation map:**
 
 | Mutation | Invalidates |
-|---|---|
 | Create/retire/delete drone | `drones`, `fleet-health` |
 | Update drone | `drones` |
 | Create mission | `missions`, `fleet-health` |
@@ -745,7 +740,6 @@ export function cn(...inputs: ClassValue[]) {
 ### Components Used in This Project
 
 | Component | Usage |
-|---|---|
 | `badge` | Status labels (drone status, mission status) |
 | `button` | Actions, form submit, state transitions |
 | `card` | Dashboard cards, detail sections |
@@ -1242,6 +1236,7 @@ describe('Mission Lifecycle (e2e)', () => {
 ```
 
 **Key points:**
+
 - **Global setup must match `main.ts`**: `setGlobalPrefix('api')`, `ValidationPipe`, `AllExceptionsFilter`
 - **Cleanup is essential**: delete test records in `afterAll` to keep the database clean
 - **No mocking**: integration tests use real database, real repositories, real business logic

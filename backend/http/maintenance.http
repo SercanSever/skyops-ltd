@@ -16,7 +16,7 @@ POST http://localhost:3000/api/maintenance-logs
 Content-Type: application/json
 
 {
-  "droneId": "{{droneId}}",
+  "droneId": "a6bf8f56-fe1c-467c-977c-3993b328830a",
   "type": "ROUTINE_CHECK",
   "technicianName": "Alex Smith",
   "notes": "Regular 90-day inspection completed",
@@ -28,16 +28,16 @@ Content-Type: application/json
 GET http://localhost:3000/api/maintenance-logs?page=1&limit=10
 
 ### List Maintenance Logs (filtered by droneId)
-GET http://localhost:3000/api/maintenance-logs?droneId={{droneId}}
+GET http://localhost:3000/api/maintenance-logs?droneId=a6bf8f56-fe1c-467c-977c-3993b328830a
 
 ### List Maintenance Logs (filtered by type)
 GET http://localhost:3000/api/maintenance-logs?type=ROUTINE_CHECK
 
 ### Get Maintenance Log by ID
-GET http://localhost:3000/api/maintenance-logs/{{maintenanceId}}
+GET http://localhost:3000/api/maintenance-logs/85a4dc2b-bcab-4d97-b449-879514e2b12a
 
 ### Complete Maintenance (drone → AVAILABLE)
-PATCH http://localhost:3000/api/maintenance-logs/{{maintenanceId}}/complete
+PATCH http://localhost:3000/api/maintenance-logs/85a4dc2b-bcab-4d97-b449-879514e2b12a/complete
 
 ### --- Validation Error Cases ---
 
@@ -46,7 +46,7 @@ POST http://localhost:3000/api/maintenance-logs
 Content-Type: application/json
 
 {
-  "droneId": "{{droneId}}",
+  "droneId": "a6bf8f56-fe1c-467c-977c-3993b328830a",
   "type": "BATTERY_REPLACEMENT",
   "technicianName": "Tech",
   "datePerformed": "2026-04-01T10:00:00Z",
@@ -58,7 +58,7 @@ POST http://localhost:3000/api/maintenance-logs
 Content-Type: application/json
 
 {
-  "droneId": "{{droneId}}",
+  "droneId": "a6bf8f56-fe1c-467c-977c-3993b328830a",
   "type": "MOTOR_REPAIR",
   "technicianName": "Tech",
   "datePerformed": "2026-04-01T10:00:00Z",
