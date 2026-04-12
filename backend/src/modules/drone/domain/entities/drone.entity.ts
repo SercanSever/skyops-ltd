@@ -11,6 +11,7 @@ interface DroneProps {
   totalFlightHours: number;
   lastMaintenanceDate: Date | null;
   nextMaintenanceDueDate: Date | null;
+  version: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -37,6 +38,7 @@ export class Drone {
       totalFlightHours: 0,
       lastMaintenanceDate: null,
       nextMaintenanceDueDate: null,
+      version: 1,
       createdAt: now,
       updatedAt: now,
     });
@@ -80,6 +82,10 @@ export class Drone {
 
   get updatedAt(): Date {
     return this.props.updatedAt;
+  }
+
+  get version(): number {
+    return this.props.version;
   }
 
   isAvailable(): boolean {

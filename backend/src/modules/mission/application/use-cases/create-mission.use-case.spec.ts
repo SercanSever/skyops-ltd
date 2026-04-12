@@ -1,4 +1,5 @@
 import { CreateMissionUseCase } from './create-mission.use-case';
+import { BusinessRuleViolationException } from '../../../../common/exceptions/business-rule-violation.exception';
 import { IDroneRepository } from '../../../drone/domain/repositories/drone.repository.interface';
 import { IMissionRepository } from '../../domain/repositories/mission.repository.interface';
 import { Drone } from '../../../drone/domain/entities/drone.entity';
@@ -35,6 +36,7 @@ describe('CreateMissionUseCase', () => {
       totalFlightHours: 0,
       lastMaintenanceDate: null,
       nextMaintenanceDueDate: null,
+      version: 1,
       createdAt: new Date(),
       updatedAt: new Date(),
     });
@@ -61,6 +63,7 @@ describe('CreateMissionUseCase', () => {
 
   it('should create mission with valid data', async () => {
     mockDroneRepo.findById.mockResolvedValue(createAvailableDrone());
+    mockDroneRepo.save.mockImplementation((d) => Promise.resolve(d));
     mockMissionRepo.findOverlapping.mockResolvedValue(null);
     mockMissionRepo.save.mockImplementation((m) => Promise.resolve(m));
 
@@ -77,6 +80,8 @@ describe('CreateMissionUseCase', () => {
     expect(result).toBeDefined();
     expect(result.name).toBe('Test Mission');
     expect(result.droneId).toBe('drone-123');
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    expect(mockDroneRepo.save).toHaveBeenCalledTimes(1);
   });
 
   it('should throw 404 when drone not found', async () => {
@@ -157,5 +162,32 @@ describe('CreateMissionUseCase', () => {
         plannedEndTime: futureEndDate(),
       }),
     ).rejects.toMatchObject({ statusCode: 409 });
+  });
+
+  it('should throw 409 when concurrent creation causes version conflict', async () => {
+    mockDroneRepo.findById.mockResolvedValue(createAvailableDrone());
+    mockMissionRepo.findOverlapping.mockResolvedValue(null);
+    mockDroneRepo.save.mockRejectedValue(
+      new BusinessRuleViolationException(
+        'Drone was modified by another request. Please refresh and try again.',
+        409,
+        { entityId: 'drone-123', expectedVersion: 1 },
+      ),
+    );
+
+    await expect(
+      useCase.execute({
+        name: 'Test',
+        type: MissionType.SOLAR_PANEL_SURVEY,
+        droneId: 'drone-123',
+        pilotName: 'John',
+        siteLocation: 'Site',
+        plannedStartTime: futureDate(),
+        plannedEndTime: futureEndDate(),
+      }),
+    ).rejects.toMatchObject({ statusCode: 409 });
+
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    expect(mockMissionRepo.save).not.toHaveBeenCalled();
   });
 });

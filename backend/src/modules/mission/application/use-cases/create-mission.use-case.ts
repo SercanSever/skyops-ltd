@@ -57,6 +57,8 @@ export class CreateMissionUseCase {
       );
     }
 
+    await this.droneRepository.save(drone);
+
     const mission = Mission.create({
       name: input.name,
       type: input.type,

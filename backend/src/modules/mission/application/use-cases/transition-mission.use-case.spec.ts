@@ -23,6 +23,7 @@ describe('TransitionMissionUseCase', () => {
       totalFlightHours: 10,
       lastMaintenanceDate: new Date(),
       nextMaintenanceDueDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
+      version: 1,
       createdAt: new Date(),
       updatedAt: new Date(),
     });

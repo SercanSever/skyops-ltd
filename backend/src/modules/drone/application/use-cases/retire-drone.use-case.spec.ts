@@ -32,6 +32,7 @@ describe('RetireDroneUseCase', () => {
       totalFlightHours: 100,
       lastMaintenanceDate: null,
       nextMaintenanceDueDate: null,
+      version: 1,
       createdAt: new Date(),
       updatedAt: new Date(),
     });
@@ -82,6 +83,7 @@ describe('RetireDroneUseCase', () => {
       totalFlightHours: 100,
       lastMaintenanceDate: null,
       nextMaintenanceDueDate: null,
+      version: 1,
       createdAt: new Date(),
       updatedAt: new Date(),
     });

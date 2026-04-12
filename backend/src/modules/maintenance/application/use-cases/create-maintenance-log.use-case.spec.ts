@@ -24,6 +24,7 @@ describe('CreateMaintenanceLogUseCase', () => {
       totalFlightHours,
       lastMaintenanceDate: null,
       nextMaintenanceDueDate: null,
+      version: 1,
       createdAt: new Date(),
       updatedAt: new Date(),
     });

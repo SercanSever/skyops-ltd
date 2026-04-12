@@ -1,11 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, FindOptionsWhere } from 'typeorm';
+import {
+  Repository,
+  FindOptionsWhere,
+  OptimisticLockVersionMismatchError,
+} from 'typeorm';
 import { Drone } from '../../domain/entities/drone.entity';
 import {
   FindAllDronesOptions,
   IDroneRepository,
 } from '../../domain/repositories/drone.repository.interface';
+import { BusinessRuleViolationException } from '../../../../common/exceptions/business-rule-violation.exception';
 import { DroneOrmEntity } from './drone.orm-entity';
 import { DroneMapper } from './drone.mapper';
 import { MissionOrmEntity } from '../../../mission/infrastructure/persistence/mission.orm-entity';
@@ -67,9 +72,20 @@ export class DroneRepository implements IDroneRepository {
   }
 
   async save(drone: Drone): Promise<Drone> {
-    const orm = DroneMapper.toOrm(drone);
-    const saved = await this.repository.save(orm);
-    return DroneMapper.toDomain(saved);
+    try {
+      const orm = DroneMapper.toOrm(drone);
+      const saved = await this.repository.save(orm);
+      return DroneMapper.toDomain(saved);
+    } catch (error) {
+      if (error instanceof OptimisticLockVersionMismatchError) {
+        throw new BusinessRuleViolationException(
+          'Drone was modified by another request. Please refresh and try again.',
+          409,
+          { entityId: drone.id, expectedVersion: drone.version },
+        );
+      }
+      throw error;
+    }
   }
 
   async delete(id: string): Promise<void> {
