@@ -96,6 +96,18 @@ When the user says `--issuedone`:
 2. Close each open issue via `gh issue close <number>`
 3. Report which issues were closed
 
+## Migration Rules
+
+When a new feature or fix requires a new DB table or schema change:
+
+1. Create the Entity (domain) and ORM Entity (infrastructure) files
+2. **STOP** — Do NOT generate migration yet. Present the entity structure and proposed migration name to the user
+3. After user approves → run `npm run migration:generate -- src/database/migrations/<Name>` (generate only)
+4. **STOP** — Show the generated migration file to the user, wait for approval
+5. After user approves → run `npm run migration:run` to update the database
+
+**Never run migration:generate or migration:run without explicit user approval.**
+
 ## Key Principle
 
 **Never commit, push, or create a PR automatically.** Always wait for the explicit `--commitpr` command. This applies to ALL changes — phase implementations, bug fixes, issue fixes, feature additions. The only action that triggers git operations is `--commitpr`.

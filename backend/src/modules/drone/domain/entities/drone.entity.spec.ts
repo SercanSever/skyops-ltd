@@ -21,6 +21,7 @@ describe('Drone', () => {
       expect(drone.totalFlightHours).toBe(0);
       expect(drone.lastMaintenanceDate).toBeNull();
       expect(drone.nextMaintenanceDueDate).toBeNull();
+      expect(drone.version).toBe(1);
       expect(drone.createdAt).toBeInstanceOf(Date);
       expect(drone.updatedAt).toBeInstanceOf(Date);
     });
@@ -43,6 +44,7 @@ describe('Drone', () => {
         totalFlightHours: 42.5,
         lastMaintenanceDate: now,
         nextMaintenanceDueDate: now,
+        version: 1,
         createdAt: now,
         updatedAt: now,
       });
@@ -50,6 +52,7 @@ describe('Drone', () => {
       expect(drone.id).toBe('test-id');
       expect(drone.status).toBe(DroneStatus.IN_MISSION);
       expect(drone.totalFlightHours).toBe(42.5);
+      expect(drone.version).toBe(1);
     });
   });
 
@@ -158,6 +161,7 @@ describe('Drone', () => {
         totalFlightHours: 0,
         lastMaintenanceDate: lastMaintenance,
         nextMaintenanceDueDate: null,
+        version: 1,
         createdAt: new Date('2025-01-01'),
         updatedAt: new Date(),
       });
@@ -180,6 +184,7 @@ describe('Drone', () => {
         totalFlightHours: 0,
         lastMaintenanceDate: null,
         nextMaintenanceDueDate: null,
+        version: 1,
         createdAt,
         updatedAt: new Date(),
       });
@@ -203,6 +208,7 @@ describe('Drone', () => {
         totalFlightHours: 10,
         lastMaintenanceDate: new Date('2025-01-01'),
         nextMaintenanceDueDate: new Date('2025-06-01'),
+        version: 1,
         createdAt: new Date('2025-01-01'),
         updatedAt: new Date(),
       });
@@ -222,6 +228,7 @@ describe('Drone', () => {
         totalFlightHours: 80,
         lastMaintenanceDate: new Date(),
         nextMaintenanceDueDate: futureDate,
+        version: 1,
         createdAt: new Date(),
         updatedAt: new Date(),
       });
@@ -241,6 +248,7 @@ describe('Drone', () => {
         totalFlightHours: 40,
         lastMaintenanceDate: new Date(),
         nextMaintenanceDueDate: futureDate,
+        version: 1,
         createdAt: new Date(),
         updatedAt: new Date(),
       });
@@ -260,6 +268,7 @@ describe('Drone', () => {
         totalFlightHours: 50,
         lastMaintenanceDate: new Date(),
         nextMaintenanceDueDate: futureDate,
+        version: 1,
         createdAt: new Date(),
         updatedAt: new Date(),
       });

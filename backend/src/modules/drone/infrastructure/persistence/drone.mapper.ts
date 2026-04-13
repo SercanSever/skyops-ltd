@@ -12,6 +12,7 @@ export class DroneMapper {
       totalFlightHours: parseFloat(orm.totalFlightHours),
       lastMaintenanceDate: orm.lastMaintenanceDate,
       nextMaintenanceDueDate: orm.nextMaintenanceDueDate,
+      version: orm.version,
       createdAt: orm.createdAt,
       updatedAt: orm.updatedAt,
     });
@@ -26,6 +27,7 @@ export class DroneMapper {
     orm.totalFlightHours = domain.totalFlightHours.toString();
     orm.lastMaintenanceDate = domain.lastMaintenanceDate;
     orm.nextMaintenanceDueDate = domain.nextMaintenanceDueDate;
+    orm.version = domain.version;
     orm.createdAt = domain.createdAt;
     orm.updatedAt = domain.updatedAt;
     return orm;

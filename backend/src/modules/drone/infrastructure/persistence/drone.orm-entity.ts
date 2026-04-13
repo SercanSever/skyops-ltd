@@ -6,6 +6,7 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
+  VersionColumn,
 } from 'typeorm';
 import { DroneModel } from '../../domain/enums/drone-model.enum';
 import { DroneStatus } from '../../domain/enums/drone-status.enum';
@@ -59,6 +60,9 @@ export class DroneOrmEntity {
     nullable: true,
   })
   nextMaintenanceDueDate!: Date | null;
+
+  @VersionColumn()
+  version!: number;
 
   @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
   createdAt!: Date;
